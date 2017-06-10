@@ -15,8 +15,9 @@ import info.nightscout.androidaps.MainApp;
 import info.nightscout.androidaps.R;
 import info.nightscout.androidaps.interfaces.PluginBase;
 import info.nightscout.androidaps.interfaces.ProfileInterface;
-import info.nightscout.androidaps.plugins.NSClientInternal.data.NSProfile;
+import info.nightscout.androidaps.data.ProfileStore;
 import info.nightscout.utils.DecimalFormatter;
+import info.nightscout.utils.NSUpload;
 import info.nightscout.utils.SP;
 import info.nightscout.utils.SafeParse;
 import info.nightscout.utils.ToastUtils;
@@ -32,7 +33,8 @@ public class CircadianPercentageProfilePlugin implements PluginBase, ProfileInte
     private static boolean fragmentEnabled = false;
     private static boolean fragmentVisible = true;
 
-    private static NSProfile convertedProfile = null;
+    private static ProfileStore convertedProfile = null;
+    private static String convertedProfileName = null;
 
     boolean mgdl;
     boolean mmol;
@@ -202,22 +204,27 @@ public class CircadianPercentageProfilePlugin implements PluginBase, ProfileInte
         } catch (JSONException e) {
             e.printStackTrace();
         }
-        convertedProfile = new NSProfile(json, profileName);
+        convertedProfile = new ProfileStore(json);
+        convertedProfileName = profileName;
     }
 
     @Override
-    public NSProfile getProfile() {
-
+    public ProfileStore getProfile() {
         performLimitCheck();
-
         return convertedProfile;
+    }
+
+    @Override
+    public String getProfileName() {
+        performLimitCheck();
+        return convertedProfileName;
     }
 
     private void performLimitCheck() {
         if (percentage < Constants.CPP_MIN_PERCENTAGE || percentage > Constants.CPP_MAX_PERCENTAGE) {
             String msg = String.format(MainApp.sResources.getString(R.string.openapsma_valueoutofrange), "Profile-Percentage");
             log.error(msg);
-            MainApp.getConfigBuilder().uploadError(msg);
+            NSUpload.uploadError(msg);
             ToastUtils.showToastInUiThread(MainApp.instance().getApplicationContext(), msg, R.raw.error);
             percentage = Math.max(percentage, Constants.CPP_MIN_PERCENTAGE);
             percentage = Math.min(percentage, Constants.CPP_MAX_PERCENTAGE);

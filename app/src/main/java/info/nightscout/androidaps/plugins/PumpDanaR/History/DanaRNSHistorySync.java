@@ -10,12 +10,14 @@ import java.util.List;
 
 import info.nightscout.androidaps.MainApp;
 import info.nightscout.androidaps.R;
+import info.nightscout.androidaps.db.CareportalEvent;
 import info.nightscout.androidaps.db.DanaRHistoryRecord;
 import info.nightscout.androidaps.plugins.ConfigBuilder.ConfigBuilderPlugin;
+import info.nightscout.androidaps.data.Profile;
 import info.nightscout.androidaps.plugins.PumpDanaR.comm.RecordTypes;
 import info.nightscout.androidaps.plugins.PumpDanaR.events.EventDanaRSyncStatus;
-import info.nightscout.androidaps.plugins.NSClientInternal.data.NSProfile;
 import info.nightscout.utils.DateUtil;
+import info.nightscout.utils.NSUpload;
 import info.nightscout.utils.ToastUtils;
 
 /**
@@ -45,7 +47,7 @@ public class DanaRNSHistorySync {
     public void sync(int what) {
         try {
             ConfigBuilderPlugin ConfigBuilderPlugin = MainApp.getConfigBuilder();
-            NSProfile profile = ConfigBuilderPlugin.getActiveProfile().getProfile();
+            Profile profile = MainApp.getConfigBuilder().getProfile();
             if (profile == null) {
                 ToastUtils.showToastInUiThread(MainApp.instance().getApplicationContext(), MainApp.sResources.getString(R.string.noprofile));
                 return;
@@ -58,72 +60,72 @@ public class DanaRNSHistorySync {
             EventDanaRSyncStatus ev = new EventDanaRSyncStatus();
             for (DanaRHistoryRecord record : historyRecords) {
                 processing++;
-                if (record.get_id() != null) continue;
-                //log.debug(record.getBytes());
+                if (record._id != null) continue;
+                //log.debug(record.bytes);
                 JSONObject nsrec = new JSONObject();
                 ev.message = MainApp.sResources.getString(R.string.uploading) + " " + processing + "/" + records + " "; // TODO: translations
-                switch (record.getRecordCode()) {
+                switch (record.recordCode) {
                     case RecordTypes.RECORD_TYPE_BOLUS:
                         if ((what & SYNC_BOLUS) == 0) break;
-                        switch (record.getBolusType()) {
+                        switch (record.bolusType) {
                             case "S":
-                                log.debug("Syncing standard bolus record " + record.getRecordValue() + "U " + DateUtil.toISOString(record.getRecordDate()));
-                                nsrec.put(DANARSIGNATURE, record.getBytes());
+                                log.debug("Syncing standard bolus record " + record.recordValue + "U " + DateUtil.toISOString(record.recordDate));
+                                nsrec.put(DANARSIGNATURE, record.bytes);
                                 nsrec.put("eventType", "Meal Bolus");
-                                nsrec.put("insulin", record.getRecordValue());
-                                nsrec.put("created_at", DateUtil.toISOString(record.getRecordDate()));
+                                nsrec.put("insulin", record.recordValue);
+                                nsrec.put("created_at", DateUtil.toISOString(record.recordDate));
                                 nsrec.put("enteredBy", MainApp.sResources.getString(R.string.app_name));
-                                ConfigBuilderPlugin.uploadCareportalEntryToNS(nsrec);
+                                NSUpload.uploadCareportalEntryToNS(nsrec);
                                 uploaded++;
                                 ev.message += MainApp.sResources.getString(R.string.danar_sbolus);
                                 break;
                             case "E":
-                                if (record.getRecordDuration() > 0) {
-                                    log.debug("Syncing extended bolus record " + record.getRecordValue() + "U " + DateUtil.toISOString(record.getRecordDate()));
-                                    nsrec.put(DANARSIGNATURE, record.getBytes());
-                                    nsrec.put("eventType", "Combo Bolus");
+                                if (record.recordDuration > 0) {
+                                    log.debug("Syncing extended bolus record " + record.recordValue + "U " + DateUtil.toISOString(record.recordDate));
+                                    nsrec.put(DANARSIGNATURE, record.bytes);
+                                    nsrec.put("eventType", CareportalEvent.COMBOBOLUS);
                                     nsrec.put("insulin", 0);
-                                    nsrec.put("duration", record.getRecordDuration());
-                                    nsrec.put("relative", record.getRecordValue() / record.getRecordDuration() * 60);
+                                    nsrec.put("duration", record.recordDuration);
+                                    nsrec.put("relative", record.recordValue / record.recordDuration * 60);
                                     nsrec.put("splitNow", 0);
                                     nsrec.put("splitExt", 100);
-                                    cal.setTimeInMillis(record.getRecordDate());
-                                    cal.add(Calendar.MINUTE, -1 * record.getRecordDuration());
+                                    cal.setTimeInMillis(record.recordDate);
+                                    cal.add(Calendar.MINUTE, -1 * record.recordDuration);
                                     nsrec.put("created_at", DateUtil.toISOString(cal.getTime()));
                                     nsrec.put("enteredBy", MainApp.sResources.getString(R.string.app_name));
-                                    ConfigBuilderPlugin.uploadCareportalEntryToNS(nsrec);
+                                    NSUpload.uploadCareportalEntryToNS(nsrec);
                                     uploaded++;
                                     ev.message += MainApp.sResources.getString(R.string.danar_ebolus);
                                 } else {
-                                    log.debug("NOT Syncing extended bolus record " + record.getRecordValue() + "U " + DateUtil.toISOString(record.getRecordDate()) + " zero duration");
+                                    log.debug("NOT Syncing extended bolus record " + record.recordValue + "U " + DateUtil.toISOString(record.recordDate) + " zero duration");
                                 }
                                 break;
                             case "DS":
-                                log.debug("Syncing dual(S) bolus record " + record.getRecordValue() + "U " + DateUtil.toISOString(record.getRecordDate()));
-                                nsrec.put(DANARSIGNATURE, record.getBytes());
-                                nsrec.put("eventType", "Combo Bolus");
-                                nsrec.put("insulin", record.getRecordValue());
+                                log.debug("Syncing dual(S) bolus record " + record.recordValue + "U " + DateUtil.toISOString(record.recordDate));
+                                nsrec.put(DANARSIGNATURE, record.bytes);
+                                nsrec.put("eventType", CareportalEvent.COMBOBOLUS);
+                                nsrec.put("insulin", record.recordValue);
                                 nsrec.put("splitNow", 100);
                                 nsrec.put("splitExt", 0);
-                                nsrec.put("created_at", DateUtil.toISOString(record.getRecordDate()));
+                                nsrec.put("created_at", DateUtil.toISOString(record.recordDate));
                                 nsrec.put("enteredBy", MainApp.sResources.getString(R.string.app_name));
-                                ConfigBuilderPlugin.uploadCareportalEntryToNS(nsrec);
+                                NSUpload.uploadCareportalEntryToNS(nsrec);
                                 uploaded++;
                                 ev.message += MainApp.sResources.getString(R.string.danar_dsbolus);
                                 break;
                             case "DE":
-                                log.debug("Syncing dual(E) bolus record " + record.getRecordValue() + "U " + DateUtil.toISOString(record.getRecordDate()));
-                                nsrec.put(DANARSIGNATURE, record.getBytes());
-                                nsrec.put("eventType", "Combo Bolus");
-                                nsrec.put("duration", record.getRecordDuration());
-                                nsrec.put("relative", record.getRecordValue() / record.getRecordDuration() * 60);
+                                log.debug("Syncing dual(E) bolus record " + record.recordValue + "U " + DateUtil.toISOString(record.recordDate));
+                                nsrec.put(DANARSIGNATURE, record.bytes);
+                                nsrec.put("eventType", CareportalEvent.COMBOBOLUS);
+                                nsrec.put("duration", record.recordDuration);
+                                nsrec.put("relative", record.recordValue / record.recordDuration * 60);
                                 nsrec.put("splitNow", 0);
                                 nsrec.put("splitExt", 100);
-                                cal.setTimeInMillis(record.getRecordDate());
-                                cal.add(Calendar.MINUTE, -1 * record.getRecordDuration());
+                                cal.setTimeInMillis(record.recordDate);
+                                cal.add(Calendar.MINUTE, -1 * record.recordDuration);
                                 nsrec.put("created_at", DateUtil.toISOString(cal.getTime()));
                                 nsrec.put("enteredBy", MainApp.sResources.getString(R.string.app_name));
-                                ConfigBuilderPlugin.uploadCareportalEntryToNS(nsrec);
+                                NSUpload.uploadCareportalEntryToNS(nsrec);
                                 uploaded++;
                                 ev.message += MainApp.sResources.getString(R.string.danar_debolus);
                                 break;
@@ -134,78 +136,78 @@ public class DanaRNSHistorySync {
                         break;
                     case RecordTypes.RECORD_TYPE_ERROR:
                         if ((what & SYNC_ERROR) == 0) break;
-                        log.debug("Syncing error record " + DateUtil.toISOString(record.getRecordDate()));
-                        nsrec.put(DANARSIGNATURE, record.getBytes());
+                        log.debug("Syncing error record " + DateUtil.toISOString(record.recordDate));
+                        nsrec.put(DANARSIGNATURE, record.bytes);
                         nsrec.put("eventType", "Note");
                         nsrec.put("notes", "Error");
-                        nsrec.put("created_at", DateUtil.toISOString(record.getRecordDate()));
+                        nsrec.put("created_at", DateUtil.toISOString(record.recordDate));
                         nsrec.put("enteredBy", MainApp.sResources.getString(R.string.app_name));
-                        ConfigBuilderPlugin.uploadCareportalEntryToNS(nsrec);
+                        NSUpload.uploadCareportalEntryToNS(nsrec);
                         uploaded++;
                         ev.message += MainApp.sResources.getString(R.string.danar_error);
                         break;
                     case RecordTypes.RECORD_TYPE_REFILL:
                         if ((what & SYNC_REFILL) == 0) break;
-                        log.debug("Syncing refill record " + record.getRecordValue() + " " + DateUtil.toISOString(record.getRecordDate()));
-                        nsrec.put(DANARSIGNATURE, record.getBytes());
+                        log.debug("Syncing refill record " + record.recordValue + " " + DateUtil.toISOString(record.recordDate));
+                        nsrec.put(DANARSIGNATURE, record.bytes);
                         nsrec.put("eventType", "Insulin Change");
-                        nsrec.put("notes", "Refill " + record.getRecordValue() + "U");
-                        nsrec.put("created_at", DateUtil.toISOString(record.getRecordDate()));
+                        nsrec.put("notes", "Refill " + record.recordValue + "U");
+                        nsrec.put("created_at", DateUtil.toISOString(record.recordDate));
                         nsrec.put("enteredBy", MainApp.sResources.getString(R.string.app_name));
-                        ConfigBuilderPlugin.uploadCareportalEntryToNS(nsrec);
+                        NSUpload.uploadCareportalEntryToNS(nsrec);
                         uploaded++;
                         ev.message += MainApp.sResources.getString(R.string.danar_refill);
                         break;
                     case RecordTypes.RECORD_TYPE_BASALHOUR:
                         if ((what & SYNC_BASALHOURS) == 0) break;
-                        log.debug("Syncing basal hour record " + record.getRecordValue() + " " + DateUtil.toISOString(record.getRecordDate()));
-                        nsrec.put(DANARSIGNATURE, record.getBytes());
-                        nsrec.put("eventType", "Temp Basal");
-                        nsrec.put("absolute", record.getRecordValue());
+                        log.debug("Syncing basal hour record " + record.recordValue + " " + DateUtil.toISOString(record.recordDate));
+                        nsrec.put(DANARSIGNATURE, record.bytes);
+                        nsrec.put("eventType", CareportalEvent.TEMPBASAL);
+                        nsrec.put("absolute", record.recordValue);
                         nsrec.put("duration", 60);
-                        nsrec.put("created_at", DateUtil.toISOString(record.getRecordDate()));
+                        nsrec.put("created_at", DateUtil.toISOString(record.recordDate));
                         nsrec.put("enteredBy", MainApp.sResources.getString(R.string.app_name));
-                        ConfigBuilderPlugin.uploadCareportalEntryToNS(nsrec);
+                        NSUpload.uploadCareportalEntryToNS(nsrec);
                         uploaded++;
                         ev.message += MainApp.sResources.getString(R.string.danar_basalhour);
                         break;
                     case RecordTypes.RECORD_TYPE_TB:
-                        //log.debug("Ignoring TB record " + record.getBytes() + " " + DateUtil.toISOString(record.getRecordDate()));
+                        //log.debug("Ignoring TB record " + record.bytes + " " + DateUtil.toISOString(record.recordDate));
                         break;
                     case RecordTypes.RECORD_TYPE_GLUCOSE:
                         if ((what & SYNC_GLUCOSE) == 0) break;
-                        log.debug("Syncing glucose record " + record.getRecordValue() + " " + DateUtil.toISOString(record.getRecordDate()));
-                        nsrec.put(DANARSIGNATURE, record.getBytes());
+                        log.debug("Syncing glucose record " + record.recordValue + " " + DateUtil.toISOString(record.recordDate));
+                        nsrec.put(DANARSIGNATURE, record.bytes);
                         nsrec.put("eventType", "BG Check");
-                        nsrec.put("glucose", NSProfile.fromMgdlToUnits(record.getRecordValue(), profile.getUnits()));
+                        nsrec.put("glucose", Profile.fromMgdlToUnits(record.recordValue, profile.getUnits()));
                         nsrec.put("glucoseType", "Finger");
-                        nsrec.put("created_at", DateUtil.toISOString(record.getRecordDate()));
+                        nsrec.put("created_at", DateUtil.toISOString(record.recordDate));
                         nsrec.put("enteredBy", MainApp.sResources.getString(R.string.app_name));
-                        ConfigBuilderPlugin.uploadCareportalEntryToNS(nsrec);
+                        NSUpload.uploadCareportalEntryToNS(nsrec);
                         uploaded++;
                         ev.message += MainApp.sResources.getString(R.string.danar_glucose);
                         break;
                     case RecordTypes.RECORD_TYPE_CARBO:
                         if ((what & SYNC_CARBO) == 0) break;
-                        log.debug("Syncing carbo record " + record.getRecordValue() + "g " + DateUtil.toISOString(record.getRecordDate()));
-                        nsrec.put(DANARSIGNATURE, record.getBytes());
+                        log.debug("Syncing carbo record " + record.recordValue + "g " + DateUtil.toISOString(record.recordDate));
+                        nsrec.put(DANARSIGNATURE, record.bytes);
                         nsrec.put("eventType", "Meal Bolus");
-                        nsrec.put("carbs", record.getRecordValue());
-                        nsrec.put("created_at", DateUtil.toISOString(record.getRecordDate()));
+                        nsrec.put("carbs", record.recordValue);
+                        nsrec.put("created_at", DateUtil.toISOString(record.recordDate));
                         nsrec.put("enteredBy", MainApp.sResources.getString(R.string.app_name));
-                        ConfigBuilderPlugin.uploadCareportalEntryToNS(nsrec);
+                        NSUpload.uploadCareportalEntryToNS(nsrec);
                         uploaded++;
                         ev.message += MainApp.sResources.getString(R.string.danar_carbohydrate);
                         break;
                     case RecordTypes.RECORD_TYPE_ALARM:
                         if ((what & SYNC_ALARM) == 0) break;
-                        log.debug("Syncing alarm record " + record.getRecordAlarm() + " " + DateUtil.toISOString(record.getRecordDate()));
-                        nsrec.put(DANARSIGNATURE, record.getBytes());
+                        log.debug("Syncing alarm record " + record.recordAlarm + " " + DateUtil.toISOString(record.recordDate));
+                        nsrec.put(DANARSIGNATURE, record.bytes);
                         nsrec.put("eventType", "Note");
-                        nsrec.put("notes", "Alarm: " + record.getRecordAlarm());
-                        nsrec.put("created_at", DateUtil.toISOString(record.getRecordDate()));
+                        nsrec.put("notes", "Alarm: " + record.recordAlarm);
+                        nsrec.put("created_at", DateUtil.toISOString(record.recordDate));
                         nsrec.put("enteredBy", MainApp.sResources.getString(R.string.app_name));
-                        ConfigBuilderPlugin.uploadCareportalEntryToNS(nsrec);
+                        NSUpload.uploadCareportalEntryToNS(nsrec);
                         uploaded++;
                         ev.message += MainApp.sResources.getString(R.string.danar_alarm);
                         break;

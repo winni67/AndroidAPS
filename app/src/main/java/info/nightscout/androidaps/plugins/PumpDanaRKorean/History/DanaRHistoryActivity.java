@@ -21,16 +21,11 @@ import android.widget.Button;
 import android.widget.Spinner;
 import android.widget.TextView;
 
-import com.j256.ormlite.dao.Dao;
-import com.j256.ormlite.stmt.PreparedQuery;
-import com.j256.ormlite.stmt.QueryBuilder;
-import com.j256.ormlite.stmt.Where;
 import com.squareup.otto.Subscribe;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -39,12 +34,11 @@ import info.nightscout.androidaps.MainApp;
 import info.nightscout.androidaps.R;
 import info.nightscout.androidaps.db.DanaRHistoryRecord;
 import info.nightscout.androidaps.events.EventPumpStatusChanged;
-import info.nightscout.androidaps.plugins.ConfigBuilder.ConfigBuilderPlugin;
+import info.nightscout.androidaps.data.Profile;
 import info.nightscout.androidaps.plugins.PumpDanaR.History.DanaRNSHistorySync;
 import info.nightscout.androidaps.plugins.PumpDanaR.comm.RecordTypes;
 import info.nightscout.androidaps.plugins.PumpDanaR.events.EventDanaRSyncStatus;
-import info.nightscout.androidaps.plugins.PumpDanaRKorean.Services.ExecutionService;
-import info.nightscout.androidaps.plugins.NSClientInternal.data.NSProfile;
+import info.nightscout.androidaps.plugins.PumpDanaRKorean.services.DanaRKoreanExecutionService;
 import info.nightscout.utils.DateUtil;
 import info.nightscout.utils.DecimalFormatter;
 import info.nightscout.utils.ToastUtils;
@@ -53,12 +47,12 @@ public class DanaRHistoryActivity extends Activity {
     private static Logger log = LoggerFactory.getLogger(DanaRHistoryActivity.class);
 
     private boolean mBounded;
-    private static ExecutionService mExecutionService;
+    private static DanaRKoreanExecutionService mExecutionService;
 
     private Handler mHandler;
     private static HandlerThread mHandlerThread;
 
-    static NSProfile profile = null;
+    static Profile profile = null;
 
     Spinner historyTypeSpinner;
     TextView statusView;
@@ -96,7 +90,7 @@ public class DanaRHistoryActivity extends Activity {
     @Override
     public void onStart() {
         super.onStart();
-        Intent intent = new Intent(this, ExecutionService.class);
+        Intent intent = new Intent(this, DanaRKoreanExecutionService.class);
         bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
     }
 
@@ -132,7 +126,7 @@ public class DanaRHistoryActivity extends Activity {
         public void onServiceConnected(ComponentName name, IBinder service) {
             log.debug("Service is connected");
             mBounded = true;
-            ExecutionService.LocalBinder mLocalBinder = (ExecutionService.LocalBinder) service;
+            DanaRKoreanExecutionService.LocalBinder mLocalBinder = (DanaRKoreanExecutionService.LocalBinder) service;
             mExecutionService = mLocalBinder.getServiceInstance();
         }
     };
@@ -248,7 +242,7 @@ public class DanaRHistoryActivity extends Activity {
                 clearCardView();
             }
         });
-        profile = ConfigBuilderPlugin.getActiveProfile().getProfile();
+        profile = MainApp.getConfigBuilder().getProfile();
         if (profile == null) {
             ToastUtils.showToastInUiThread(MainApp.instance().getApplicationContext(), MainApp.sResources.getString(R.string.noprofile));
             finish();
@@ -272,12 +266,12 @@ public class DanaRHistoryActivity extends Activity {
         @Override
         public void onBindViewHolder(HistoryViewHolder holder, int position) {
             DanaRHistoryRecord record = historyList.get(position);
-            holder.time.setText(DateUtil.dateAndTimeString(record.getRecordDate()));
-            holder.value.setText(DecimalFormatter.to2Decimal(record.getRecordValue()));
-            holder.stringvalue.setText(record.getStringRecordValue());
-            holder.bolustype.setText(record.getBolusType());
-            holder.duration.setText(DecimalFormatter.to0Decimal(record.getRecordDuration()));
-            holder.alarm.setText(record.getRecordAlarm());
+            holder.time.setText(DateUtil.dateAndTimeString(record.recordDate));
+            holder.value.setText(DecimalFormatter.to2Decimal(record.recordValue));
+            holder.stringvalue.setText(record.stringRecordValue);
+            holder.bolustype.setText(record.bolusType);
+            holder.duration.setText(DecimalFormatter.to0Decimal(record.recordDuration));
+            holder.alarm.setText(record.recordAlarm);
             switch (showingType) {
                 case RecordTypes.RECORD_TYPE_ALARM:
                     holder.time.setVisibility(View.VISIBLE);
@@ -302,10 +296,10 @@ public class DanaRHistoryActivity extends Activity {
                     holder.alarm.setVisibility(View.GONE);
                     break;
                 case RecordTypes.RECORD_TYPE_DAILY:
-                    holder.dailybasal.setText(DecimalFormatter.to2Decimal(record.getRecordDailyBasal()) + "U");
-                    holder.dailybolus.setText(DecimalFormatter.to2Decimal(record.getRecordDailyBolus()) + "U");
-                    holder.dailytotal.setText(DecimalFormatter.to2Decimal(record.getRecordDailyBolus() + record.getRecordDailyBasal()) + "U");
-                    holder.time.setText(DateUtil.dateString(record.getRecordDate()));
+                    holder.dailybasal.setText(DecimalFormatter.to2Decimal(record.recordDailyBasal) + "U");
+                    holder.dailybolus.setText(DecimalFormatter.to2Decimal(record.recordDailyBolus) + "U");
+                    holder.dailytotal.setText(DecimalFormatter.to2Decimal(record.recordDailyBolus + record.recordDailyBasal) + "U");
+                    holder.time.setText(DateUtil.dateString(record.recordDate));
                     holder.time.setVisibility(View.VISIBLE);
                     holder.value.setVisibility(View.GONE);
                     holder.stringvalue.setVisibility(View.GONE);
@@ -317,7 +311,7 @@ public class DanaRHistoryActivity extends Activity {
                     holder.alarm.setVisibility(View.GONE);
                     break;
                 case RecordTypes.RECORD_TYPE_GLUCOSE:
-                    holder.value.setText(NSProfile.toUnitsString(record.getRecordValue(), record.getRecordValue() * Constants.MGDL_TO_MMOLL, profile.getUnits()));
+                    holder.value.setText(Profile.toUnitsString(record.recordValue, record.recordValue * Constants.MGDL_TO_MMOLL, profile.getUnits()));
                     // rest is the same
                 case RecordTypes.RECORD_TYPE_CARBO:
                 case RecordTypes.RECORD_TYPE_BASALHOUR:
@@ -388,19 +382,8 @@ public class DanaRHistoryActivity extends Activity {
     }
 
     private void loadDataFromDB(byte type) {
-        try {
-            Dao<DanaRHistoryRecord, String> dao = MainApp.getDbHelper().getDaoDanaRHistory();
-            QueryBuilder<DanaRHistoryRecord, String> queryBuilder = dao.queryBuilder();
-            queryBuilder.orderBy("recordDate", false);
-            Where where = queryBuilder.where();
-            where.eq("recordCode", type);
-            queryBuilder.limit(200L);
-            PreparedQuery<DanaRHistoryRecord> preparedQuery = queryBuilder.prepare();
-            historyList = dao.query(preparedQuery);
-        } catch (SQLException e) {
-            e.printStackTrace();
-            historyList = new ArrayList<>();
-        }
+        historyList = MainApp.getDbHelper().getDanaRHistoryRecordsByType(type);
+
         runOnUiThread(new Runnable() {
             @Override
             public void run() {

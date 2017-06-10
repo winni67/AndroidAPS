@@ -20,16 +20,14 @@ import info.nightscout.androidaps.Config;
 import info.nightscout.androidaps.Constants;
 import info.nightscout.androidaps.MainApp;
 import info.nightscout.androidaps.data.IobTotal;
+import info.nightscout.androidaps.data.Profile;
 import info.nightscout.androidaps.db.BgReading;
 import info.nightscout.androidaps.db.Treatment;
 import info.nightscout.androidaps.events.EventNewBG;
 import info.nightscout.androidaps.events.EventNewBasalProfile;
 import info.nightscout.androidaps.interfaces.PluginBase;
-import info.nightscout.androidaps.interfaces.TreatmentsInterface;
-import info.nightscout.androidaps.plugins.ConfigBuilder.ConfigBuilderPlugin;
 import info.nightscout.androidaps.plugins.IobCobCalculator.events.EventAutosensCalculationFinished;
 import info.nightscout.androidaps.plugins.IobCobCalculator.events.EventNewHistoryData;
-import info.nightscout.androidaps.plugins.NSClientInternal.data.NSProfile;
 import info.nightscout.utils.Round;
 import info.nightscout.utils.SP;
 import info.nightscout.utils.SafeParse;
@@ -140,7 +138,7 @@ public class IobCobCalculatorPlugin implements PluginBase {
 
     private static int indexNewerThan(long time) {
         for (int index = 0; index < bucketed_data.size(); index++) {
-            if (bucketed_data.get(index).timeIndex < time)
+            if (bucketed_data.get(index).date < time)
                 return index - 1;
         }
         return -1;
@@ -156,7 +154,7 @@ public class IobCobCalculatorPlugin implements PluginBase {
     private void loadBgData() {
         //log.debug("Locking loadBgData");
         synchronized (dataLock) {
-            onNewProfile(new EventNewBasalProfile(null, "IobCobCalculator init"));
+            onNewProfile(null);
             bgReadings = MainApp.getDbHelper().getBgreadingsDataFromTime((long) (new Date().getTime() - 60 * 60 * 1000L * (24 + dia)), false);
             log.debug("BG data loaded. Size: " + bgReadings.size());
         }
@@ -175,8 +173,8 @@ public class IobCobCalculatorPlugin implements PluginBase {
             bucketed_data.add(bgReadings.get(0));
             int j = 0;
             for (int i = 1; i < bgReadings.size(); ++i) {
-                long bgTime = bgReadings.get(i).getTimeIndex();
-                long lastbgTime = bgReadings.get(i - 1).getTimeIndex();
+                long bgTime = bgReadings.get(i).date;
+                long lastbgTime = bgReadings.get(i - 1).date;
                 //log.error("Processing " + i + ": " + new Date(bgTime).toString() + " " + bgReadings.get(i).value + "   Previous: " + new Date(lastbgTime).toString() + " " + bgReadings.get(i - 1).value);
                 if (bgReadings.get(i).value < 39 || bgReadings.get(i - 1).value < 39) {
                     continue;
@@ -193,14 +191,14 @@ public class IobCobCalculatorPlugin implements PluginBase {
                         nextbgTime = lastbgTime - 5 * 60 * 1000;
                         j++;
                         BgReading newBgreading = new BgReading();
-                        newBgreading.timeIndex = nextbgTime;
+                        newBgreading.date = nextbgTime;
                         double gapDelta = bgReadings.get(i).value - lastbg;
                         //console.error(gapDelta, lastbg, elapsed_minutes);
                         double nextbg = lastbg + (5d / elapsed_minutes * gapDelta);
                         newBgreading.value = Math.round(nextbg);
                         //console.error("Interpolated", bucketed_data[j]);
                         bucketed_data.add(newBgreading);
-                        //log.error("******************************************************************************************************* Adding:" + new Date(newBgreading.timeIndex).toString() + " " + newBgreading.value);
+                        //log.error("******************************************************************************************************* Adding:" + new Date(newBgreading.date).toString() + " " + newBgreading.value);
 
                         elapsed_minutes = elapsed_minutes - 5;
                         lastbg = nextbg;
@@ -209,16 +207,16 @@ public class IobCobCalculatorPlugin implements PluginBase {
                     j++;
                     BgReading newBgreading = new BgReading();
                     newBgreading.value = bgReadings.get(i).value;
-                    newBgreading.timeIndex = bgTime;
+                    newBgreading.date = bgTime;
                     bucketed_data.add(newBgreading);
-                    //log.error("******************************************************************************************************* Copying:" + new Date(newBgreading.timeIndex).toString() + " " + newBgreading.value);
+                    //log.error("******************************************************************************************************* Copying:" + new Date(newBgreading.date).toString() + " " + newBgreading.value);
                 } else if (Math.abs(elapsed_minutes) > 2) {
                     j++;
                     BgReading newBgreading = new BgReading();
                     newBgreading.value = bgReadings.get(i).value;
-                    newBgreading.timeIndex = bgTime;
+                    newBgreading.date = bgTime;
                     bucketed_data.add(newBgreading);
-                    //log.error("******************************************************************************************************* Copying:" + new Date(newBgreading.timeIndex).toString() + " " + newBgreading.value);
+                    //log.error("******************************************************************************************************* Copying:" + new Date(newBgreading.date).toString() + " " + newBgreading.value);
                 } else {
                     bucketed_data.get(j).value = (bucketed_data.get(j).value + bgReadings.get(i).value) / 2;
                     //log.error("***** Average");
@@ -230,34 +228,25 @@ public class IobCobCalculatorPlugin implements PluginBase {
     }
 
     public void calculateSensitivityData() {
+        if (MainApp.getConfigBuilder() == null)
+            return; // app still initializing
         //log.debug("Locking calculateSensitivityData");
         synchronized (dataLock) {
-            NSProfile profile = ConfigBuilderPlugin.getActiveProfile() != null ? ConfigBuilderPlugin.getActiveProfile().getProfile() : null;
 
-            if (profile == null || profile.getIsf(NSProfile.secondsFromMidnight()) == null || profile.getIc(NSProfile.secondsFromMidnight()) == null) {
-                log.debug("calculateSensitivityData: No profile available");
-                return;
-            }
-
-            if (ConfigBuilderPlugin.getActiveTreatments() == null) {
-                log.debug("calculateSensitivityData: No treatments plugin");
-                return;
-            }
-
-            TreatmentsInterface treatmentsInterface = ConfigBuilderPlugin.getActiveTreatments();
             if (bucketed_data == null || bucketed_data.size() < 3) {
                 log.debug("calculateSensitivityData: No bucketed data available");
                 return;
             }
 
-            long prevDataTime = roundUpTime(bucketed_data.get(bucketed_data.size() - 3).timeIndex);
+            long prevDataTime = roundUpTime(bucketed_data.get(bucketed_data.size() - 3).date);
             log.debug("Prev data time: " + new Date(prevDataTime).toLocaleString());
             AutosensData previous = autosensDataTable.get(prevDataTime);
             // start from oldest to be able sub cob
             for (int i = bucketed_data.size() - 4; i >= 0; i--) {
                 // check if data already exists
-                long bgTime = bucketed_data.get(i).timeIndex;
+                long bgTime = bucketed_data.get(i).date;
                 bgTime = roundUpTime(bgTime);
+                Profile profile = MainApp.getConfigBuilder().getProfile(bgTime);
 
                 AutosensData existing;
                 if ((existing = autosensDataTable.get(bgTime)) != null) {
@@ -265,8 +254,7 @@ public class IobCobCalculatorPlugin implements PluginBase {
                     continue;
                 }
 
-                int secondsFromMidnight = NSProfile.secondsFromMidnight(bgTime);
-                double sens = NSProfile.toMgdl(profile.getIsf(secondsFromMidnight), profile.getUnits());
+                double sens = Profile.toMgdl(profile.getIsf(bgTime), profile.getUnits());
 
                 AutosensData autosensData = new AutosensData();
                 autosensData.time = bgTime;
@@ -287,7 +275,7 @@ public class IobCobCalculatorPlugin implements PluginBase {
                 double bgi = -iob.activity * sens * 5;
                 double deviation = delta - bgi;
 
-                List<Treatment> recentTreatments = treatmentsInterface.getTreatments5MinBack(bgTime);
+                List<Treatment> recentTreatments = MainApp.getConfigBuilder().getTreatments5MinBackFromHistory(bgTime);
                 for (int ir = 0; ir < recentTreatments.size(); ir++) {
                     autosensData.carbsFromBolus += recentTreatments.get(ir).carbs;
                 }
@@ -297,7 +285,7 @@ public class IobCobCalculatorPlugin implements PluginBase {
                     // figure out how many carbs that represents
                     // but always assume at least 3mg/dL/5m (default) absorption
                     double ci = Math.max(deviation, SP.getDouble("openapsama_min_5m_carbimpact", 3.0));
-                    autosensData.absorbed = ci * profile.getIc(secondsFromMidnight) / sens;
+                    autosensData.absorbed = ci * profile.getIc(bgTime) / sens;
                     // and add that to the running total carbsAbsorbed
                     autosensData.cob = Math.max(previous.cob - autosensData.absorbed, 0d);
                 }
@@ -323,7 +311,8 @@ public class IobCobCalculatorPlugin implements PluginBase {
 
                 previous = autosensData;
                 autosensDataTable.put(bgTime, autosensData);
-                log.debug(autosensData.log(bgTime));
+                if (Config.logAutosensData)
+                    log.debug(autosensData.log(bgTime));
             }
         }
         MainApp.bus().post(new EventAutosensCalculationFinished());
@@ -339,8 +328,8 @@ public class IobCobCalculatorPlugin implements PluginBase {
         } else {
             //log.debug(">>> Cache miss " + new Date(time).toLocaleString());
         }
-        IobTotal bolusIob = ConfigBuilderPlugin.getActiveTreatments().getCalculationToTime(time).round();
-        IobTotal basalIob = ConfigBuilderPlugin.getActiveTempBasals().getCalculationToTime(time).round();
+        IobTotal bolusIob = MainApp.getConfigBuilder().getCalculationToTimeTreatments(time).round();
+        IobTotal basalIob = MainApp.getConfigBuilder().getCalculationToTimeTempBasals(time).round();
 /*
         if (basalIob.basaliob > 0) {
             log.debug(new Date(time).toLocaleString() + " basaliob: " + basalIob.basaliob );
@@ -357,8 +346,8 @@ public class IobCobCalculatorPlugin implements PluginBase {
         if (bucketed_data == null)
             return null;
         for (int index = 0; index < bucketed_data.size(); index++) {
-            if (bucketed_data.get(index).timeIndex < time)
-                return bucketed_data.get(index).timeIndex;
+            if (bucketed_data.get(index).date < time)
+                return bucketed_data.get(index).date;
         }
         return null;
     }
@@ -393,7 +382,7 @@ public class IobCobCalculatorPlugin implements PluginBase {
     }
 
     public static IobTotal[] calculateIobArrayInDia() {
-        NSProfile profile = ConfigBuilderPlugin.getActiveProfile().getProfile();
+        Profile profile = MainApp.getConfigBuilder().getProfile();
         // predict IOB out to DIA plus 30m
         long time = new Date().getTime();
         int len = (int) ((profile.getDia() * 60 + 30) / 5);
@@ -438,7 +427,7 @@ public class IobCobCalculatorPlugin implements PluginBase {
                     deviationsArray.add(autosensData.deviation);
 
                 pastSensitivity += autosensData.pastSensitivity;
-                int secondsFromMidnight = NSProfile.secondsFromMidnight(autosensData.time);
+                int secondsFromMidnight = Profile.secondsFromMidnight(autosensData.time);
                 if (secondsFromMidnight % 3600 < 2.5 * 60 || secondsFromMidnight % 3600 > 57.5 * 60) {
                     pastSensitivity += "(" + Math.round(secondsFromMidnight / 3600d) + ")";
                 }
@@ -448,19 +437,9 @@ public class IobCobCalculatorPlugin implements PluginBase {
             Double[] deviations = new Double[deviationsArray.size()];
             deviations = deviationsArray.toArray(deviations);
 
-            if (ConfigBuilderPlugin.getActiveProfile() == null || ConfigBuilderPlugin.getActiveProfile().getProfile() == null) {
-                log.debug("No profile available");
-                return new AutosensResult();
-            }
+            Profile profile = MainApp.getConfigBuilder().getProfile();
 
-            NSProfile profile = ConfigBuilderPlugin.getActiveProfile().getProfile();
-
-            Double sens = profile.getIsf(NSProfile.secondsFromMidnight());
-
-            if (sens == null || profile.getMaxDailyBasal() == 0) {
-                log.debug("No profile available");
-                return new AutosensResult();
-            }
+            double sens = profile.getIsf();
 
             double ratio = 1;
             String ratioLimit = "";
@@ -480,10 +459,10 @@ public class IobCobCalculatorPlugin implements PluginBase {
             double basalOff = 0;
 
             if (pSensitive < 0) { // sensitive
-                basalOff = pSensitive * (60 / 5) / NSProfile.toMgdl(sens, profile.getUnits());
+                basalOff = pSensitive * (60 / 5) / Profile.toMgdl(sens, profile.getUnits());
                 sensResult = "Excess insulin sensitivity detected";
             } else if (pResistant > 0) { // resistant
-                basalOff = pResistant * (60 / 5) / NSProfile.toMgdl(sens, profile.getUnits());
+                basalOff = pResistant * (60 / 5) / Profile.toMgdl(sens, profile.getUnits());
                 sensResult = "Excess insulin resistance detected";
             } else {
                 sensResult = "Sensitivity normal";
@@ -500,9 +479,9 @@ public class IobCobCalculatorPlugin implements PluginBase {
                 log.debug(ratioLimit);
             }
 
-            double newisf = Math.round(NSProfile.toMgdl(sens, profile.getUnits()) / ratio);
+            double newisf = Math.round(Profile.toMgdl(sens, profile.getUnits()) / ratio);
             if (ratio != 1) {
-                log.debug("ISF adjusted from " + NSProfile.toMgdl(sens, profile.getUnits()) + " to " + newisf);
+                log.debug("ISF adjusted from " + Profile.toMgdl(sens, profile.getUnits()) + " to " + newisf);
             }
 
             AutosensResult output = new AutosensResult();
@@ -539,17 +518,15 @@ public class IobCobCalculatorPlugin implements PluginBase {
 
     @Subscribe
     public void onNewProfile(EventNewBasalProfile ev) {
-        if (MainApp.getConfigBuilder().getActiveProfile() == null)
-            return;
-        NSProfile profile = MainApp.getConfigBuilder().getActiveProfile().getProfile();
-        if (profile != null) {
-            dia = profile.getDia();
-        }
-        if (ev.newNSProfile == null) { // on init no need of reset
+        if (MainApp.getConfigBuilder() == null)
+            return; // app still initializing
+        Profile profile = MainApp.getConfigBuilder().getProfile();
+        dia = profile.getDia();
+        if (ev == null) { // on init no need of reset
             return;
         }
         synchronized (dataLock) {
-            log.debug("Invalidating cached data because of new profile from " + ev.from + ". IOB: " + iobTable.size() + " Autosens: " + autosensDataTable.size() + " records");
+            log.debug("Invalidating cached data because of new profile. IOB: " + iobTable.size() + " Autosens: " + autosensDataTable.size() + " records");
             iobTable = new LongSparseArray<>();
             autosensDataTable = new LongSparseArray<>();
         }
@@ -570,7 +547,8 @@ public class IobCobCalculatorPlugin implements PluginBase {
             log.debug("Invalidating cached data to: " + new Date(time).toLocaleString());
             for (int index = iobTable.size() - 1; index >= 0; index--) {
                 if (iobTable.keyAt(index) > time) {
-                    log.debug("Removing from iobTable: " + new Date(iobTable.keyAt(index)).toLocaleString());
+                    if (Config.logAutosensData)
+                        log.debug("Removing from iobTable: " + new Date(iobTable.keyAt(index)).toLocaleString());
                     iobTable.removeAt(index);
                 } else {
                     break;
@@ -578,7 +556,8 @@ public class IobCobCalculatorPlugin implements PluginBase {
             }
             for (int index = autosensDataTable.size() - 1; index >= 0; index--) {
                 if (autosensDataTable.keyAt(index) > time) {
-                    log.debug("Removing from autosensDataTable: " + new Date(autosensDataTable.keyAt(index)).toLocaleString());
+                    if (Config.logAutosensData)
+                        log.debug("Removing from autosensDataTable: " + new Date(autosensDataTable.keyAt(index)).toLocaleString());
                     autosensDataTable.removeAt(index);
                 } else {
                     break;

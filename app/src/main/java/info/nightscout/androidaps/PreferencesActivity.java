@@ -14,11 +14,13 @@ import android.preference.PreferenceManager;
 import info.nightscout.androidaps.events.EventPreferenceChange;
 import info.nightscout.androidaps.events.EventRefreshGui;
 import info.nightscout.androidaps.interfaces.PluginBase;
+import info.nightscout.androidaps.plugins.PumpCombo.ComboPlugin;
 import info.nightscout.androidaps.plugins.PumpDanaR.BluetoothDevicePreference;
 import info.nightscout.androidaps.plugins.PumpDanaR.DanaRPlugin;
 import info.nightscout.androidaps.plugins.PumpDanaRKorean.DanaRKoreanPlugin;
 import info.nightscout.androidaps.plugins.NSClientInternal.NSClientInternalPlugin;
 import info.nightscout.androidaps.plugins.OpenAPSAMA.OpenAPSAMAPlugin;
+import info.nightscout.androidaps.plugins.PumpDanaRv2.DanaRv2Plugin;
 import info.nightscout.androidaps.plugins.PumpVirtual.VirtualPumpPlugin;
 import info.nightscout.androidaps.plugins.Wear.WearPlugin;
 import info.nightscout.androidaps.plugins.XDripStatusline.StatuslinePlugin;
@@ -110,11 +112,21 @@ public class PreferencesActivity extends PreferenceActivity implements SharedPre
             if (Config.DANAR) {
                 DanaRPlugin danaRPlugin = (DanaRPlugin) MainApp.getSpecificPlugin(DanaRPlugin.class);
                 DanaRKoreanPlugin danaRKoreanPlugin = (DanaRKoreanPlugin) MainApp.getSpecificPlugin(DanaRKoreanPlugin.class);
+                DanaRv2Plugin danaRv2Plugin = (DanaRv2Plugin) MainApp.getSpecificPlugin(DanaRv2Plugin.class);
                 if (danaRPlugin.isEnabled(PluginBase.PUMP) || danaRKoreanPlugin.isEnabled(PluginBase.PUMP)) {
                     addPreferencesFromResource(R.xml.pref_danar);
                 }
-                if (danaRPlugin.isEnabled(PluginBase.PROFILE) || danaRKoreanPlugin.isEnabled(PluginBase.PROFILE)) {
+                if (danaRv2Plugin != null && danaRv2Plugin.isEnabled(PluginBase.PUMP)) {
+                    addPreferencesFromResource(R.xml.pref_danarv2);
+                }
+                if (danaRPlugin.isEnabled(PluginBase.PROFILE) || danaRKoreanPlugin.isEnabled(PluginBase.PROFILE) || danaRv2Plugin != null && danaRv2Plugin.isEnabled(PluginBase.PROFILE)) {
                     addPreferencesFromResource(R.xml.pref_danarprofile);
+                }
+            }
+            if (Config.COMBO) {
+                ComboPlugin comboPlugin = (ComboPlugin) MainApp.getSpecificPlugin(ComboPlugin.class);
+                if (comboPlugin.isEnabled(PluginBase.PUMP)) {
+                    addPreferencesFromResource(R.xml.pref_combo);
                 }
             }
             VirtualPumpPlugin virtualPumpPlugin = (VirtualPumpPlugin) MainApp.getSpecificPlugin(VirtualPumpPlugin.class);
