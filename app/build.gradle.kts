@@ -158,8 +158,9 @@ android {
     }
 
     // Lint found errors
-    lintOptions {
-       abortOnError = false
+    lint {
+       disable += "MissingPermission"
+       // abortOnError = false
     }
 }
 
