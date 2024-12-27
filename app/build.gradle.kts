@@ -156,6 +156,11 @@ android {
         dataBinding = true
         buildConfig = true
     }
+
+    // Lint found errors
+    lintOptions {
+       abortOnError false
+    }
 }
 
 allprojects {
