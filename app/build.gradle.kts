@@ -73,7 +73,6 @@ fun gitAvailable(): Boolean {
         return false // NoGitSystemAvailable
     }
     return stringBuilder.toString().isNotEmpty()
-
 }
 
 fun allCommitted(): Boolean {
@@ -85,9 +84,11 @@ fun allCommitted(): Boolean {
             standardOutput = stdout
         }
         // ignore all changes done in .idea/codeStyles
-        val cleanedList: String = stdout.toString().replace("/(?m)^\\s*(M|A|D|\\?\\?)\\s*.*?\\.idea\\/codeStyles\\/.*?\\s*\$/", "")
-            // ignore all files added to project dir but not staged/known to GIT
-            .replace("/(?m)^\\s*(\\?\\?)\\s*.*?\\s*\$/", "")
+        val cleanedList: String =
+             stdout.toString()
+                .replace("/(?m)^\\s*(M|A|D|\\?\\?)\\s*.*?\\.idea\\/codeStyles\\/.*?\\s*\$/", "")
+                // ignore all files added to project dir but not staged/known to GIT
+                .replace("/(?m)^\\s*(\\?\\?)\\s*.*?\\s*\$/", "")
         stringBuilder.append(cleanedList.trim())
     } catch (ignored: Exception) {
         return false // NoGitSystemAvailable
@@ -150,7 +151,7 @@ android {
 
     useLibrary("org.apache.http.legacy")
 
-    //Deleting it causes a binding error
+    // Deleting it causes a binding error
     buildFeatures {
         dataBinding = true
         buildConfig = true
@@ -227,9 +228,8 @@ println("gitAvailable: ${gitAvailable()}")
 println("allCommitted: ${allCommitted()}")
 println("-------------------")
 if (isMaster() && !gitAvailable()) {
-    throw GradleException("GIT system is not available. On Windows try to run Android Studio as an Administrator. Check if GIT is installed and Studio have permissions to use it")
+    throw GradleException("GIT system is not available.")
 }
 if (isMaster() && !allCommitted()) {
     throw GradleException("There are uncommitted changes. Clone sources again as described in wiki and do not allow gradle update")
 }
-
