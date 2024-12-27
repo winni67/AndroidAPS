@@ -159,7 +159,7 @@ android {
 
     // Lint found errors
     lintOptions {
-       abortOnError false
+       abortOnError = false
     }
 }
 
