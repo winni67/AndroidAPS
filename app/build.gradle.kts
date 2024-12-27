@@ -85,7 +85,7 @@ fun allCommitted(): Boolean {
         }
         // ignore all changes done in .idea/codeStyles
         val cleanedList: String =
-             stdout.toString()
+            stdout.toString()
                 .replace("/(?m)^\\s*(M|A|D|\\?\\?)\\s*.*?\\.idea\\/codeStyles\\/.*?\\s*\$/", "")
                 // ignore all files added to project dir but not staged/known to GIT
                 .replace("/(?m)^\\s*(\\?\\?)\\s*.*?\\s*\$/", "")
