@@ -33,4 +33,4 @@ jobs:
       
     # Run Build Project
     - name: Build with Gradle
-      run: ./gradlew build
+      run: ./gradlew build --stacktrace
