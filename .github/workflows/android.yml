@@ -21,15 +21,16 @@ jobs:
       with:
         java-version: '17'
         distribution: 'temurin'
-        cache: gradle
+        cache: 'gradle'
 
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
 
     # Run Tests Build
-    #- name: Run gradle tests
+    - name: Run gradle tests
     #  run: ./gradlew test
+    run: gradlew clean testDebug
       
     # Run Build Project
-    - name: Build with Gradle
-      run: ./gradlew build
+    #- name: Build with Gradle
+    #  run: ./gradlew build
