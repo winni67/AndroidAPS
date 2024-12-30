@@ -36,12 +36,15 @@ jobs:
       run: ./gradlew tasks
 
     # Upload Artifact Build
+    - name: Create a file
+      run: echo "hello world" > my-file.txt
+    - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: my-artifact # NOTE: same artifact name
+          path: my-file.txt
     - name: Upload Logfiles
       uses: actions/upload-artifact@v4
       with:
-         path: insight/build/reports/ktlint/ktlintKotlinScriptCheck/**
-         when: always
-         expire_in: 24 hour
-      #  with:
          name: 'Build Logfiles'
-      #    path: insight/build/reports/ktlint/ktlintKotlinScriptCheck/**
+         path: insight/build/reports/ktlint/ktlintKotlinScriptCheck/**
