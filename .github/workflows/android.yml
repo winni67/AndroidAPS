@@ -34,21 +34,10 @@ jobs:
     # Run Build Project
     - name: Build with Gradle
       run: ./gradlew build || true
-    - uses: actions/upload-artifact@v4
-      with:
-        name: artifact
-        path: insight/build/reports/ktlint/ktlintKotlinScriptCheck/**
 
     # Upload Artifact Build
-    - name: Create a file
-      run: echo "hello world" > my-file.txt
-    - name: Upload Artifact
-      uses: actions/upload-artifact@v4
-      with:
-          name: my-artifact # NOTE: same artifact name
-          path: my-file.txt
     - name: Upload Logfiles
       uses: actions/upload-artifact@v4
       with:
          name: 'Build Logfiles'
-         path: insight/build/reports/ktlint/ktlintKotlinScriptCheck/**
+         path: insight/build/**
