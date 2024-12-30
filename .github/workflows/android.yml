@@ -33,4 +33,13 @@ jobs:
       
     # Run Build Project
     - name: Build with Gradle
-      run: ./gradlew build --info
+      run: ./gradlew build
+
+    # Upload Artifact Build
+    - name: Upload Logfiles
+        uses: actions/upload-artifact@v4
+        when: always
+        expire_in: 24 hour
+        with:
+          name: Build Logfiles
+          path: insight/build/reports/ktlint/ktlintKotlinScriptCheck/**
