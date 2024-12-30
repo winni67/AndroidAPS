@@ -33,7 +33,11 @@ jobs:
       
     # Run Build Project
     - name: Build with Gradle
-      run: ./gradlew tasks
+      run: ./gradlew build
+    - uses: actions/upload-artifact@v4
+      with:
+        name: artifact
+        path: insight/build/reports/ktlint/ktlintKotlinScriptCheck/**
 
     # Upload Artifact Build
     - name: Create a file
