@@ -1,8 +1,11 @@
 package info.nightscout.androidaps.insight.database
 
-class InsightDbHelper (val insightDatabaseDao: InsightDatabaseDao) {
-
-    fun getInsightBolusID(pumpSerial: String, bolusID: Int, timestamp: Long): InsightBolusID? = insightDatabaseDao.getInsightBolusID(pumpSerial, bolusID, timestamp)
+class InsightDbHelper(val insightDatabaseDao: InsightDatabaseDao) {
+    fun getInsightBolusID(
+        pumpSerial: String,
+        bolusID: Int,
+        timestamp: Long
+    ): InsightBolusID? = insightDatabaseDao.getInsightBolusID(pumpSerial, bolusID, timestamp)
 
     fun createOrUpdate(insightBolusID: InsightBolusID) = insightDatabaseDao.createOrUpdate(insightBolusID)
 
