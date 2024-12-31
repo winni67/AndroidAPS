@@ -10,8 +10,9 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class AlertUtils @Inject constructor(private val rh: ResourceHelper) {
-
+class AlertUtils
+@Inject
+constructor(private val rh: ResourceHelper) {
     fun getAlertCode(alertType: AlertType) = rh.gs(
         when (alertType) {
             AlertType.REMINDER_01    -> R.string.alert_r1_code
