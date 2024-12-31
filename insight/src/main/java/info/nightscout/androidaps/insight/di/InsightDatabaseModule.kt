@@ -10,7 +10,6 @@ import javax.inject.Singleton
 
 @Module
 class InsightDatabaseModule {
-
     @Provides
     @Singleton
     internal fun provideDatabase(context: Context): InsightDatabase = InsightDatabase.build(context)
@@ -23,5 +22,4 @@ class InsightDatabaseModule {
     @Provides
     @Singleton
     internal fun provideInsightDbHelper(insightDatabaseDao: InsightDatabaseDao): InsightDbHelper = InsightDbHelper(insightDatabaseDao)
-
 }
