@@ -17,8 +17,9 @@ data class InsightBolusID(
     val pumpSerial: String? = null,
     val bolusID: Int? = null,
     var startID: Long? = null,
-    var endID: Long? = null
-) {
+    var endID: Long? = null,
+)
+{
     @PrimaryKey(autoGenerate = true)
     var id: Long = 0
 }
