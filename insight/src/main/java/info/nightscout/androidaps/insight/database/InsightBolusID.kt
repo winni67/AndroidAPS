@@ -4,12 +4,14 @@ import androidx.room.Entity
 import androidx.room.Index
 import androidx.room.PrimaryKey
 
-@Entity(tableName = DATABASE_INSIGHT_BOLUS_IDS,
+@Entity(
+    tableName = DATABASE_INSIGHT_BOLUS_IDS,
     indices = [
         Index("bolusID"),
         Index("pumpSerial"),
-        Index("timestamp")
-    ])
+        Index("timestamp"),
+    ]
+)
 data class InsightBolusID(
     var timestamp: Long,
     val pumpSerial: String? = null,
