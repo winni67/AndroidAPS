@@ -8,7 +8,6 @@ import info.nightscout.androidaps.plugins.pump.insight.connection_service.Insigh
 @Module
 @Suppress("unused")
 abstract class InsightServicesModule {
-
     @ContributesAndroidInjector abstract fun contributesInsightAlertService(): InsightAlertService
     @ContributesAndroidInjector abstract fun contributesInsightConnectionService(): InsightConnectionService
 }
