@@ -13,22 +13,20 @@ const val DATABASE_INSIGHT_HISTORY_OFFSETS = "insightHistoryOffsets"
 @Database(
     entities = [InsightBolusID::class, InsightHistoryOffset::class, InsightPumpID::class],
     exportSchema = true,
-    version = InsightDatabase.VERSION
+    version = InsightDatabase.VERSION,
 )
 @TypeConverters(Converters::class)
 abstract class InsightDatabase : RoomDatabase() {
-
     abstract fun insightDatabaseDao(): InsightDatabaseDao
 
     companion object {
-
         const val VERSION = 2
 
         fun build(context: Context) =
             Room.databaseBuilder(
                 context.applicationContext,
                 InsightDatabase::class.java,
-                "insight_database.db"
+                "insight_database.db",
             )
                 .fallbackToDestructiveMigration()
                 .build()
