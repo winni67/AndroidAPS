@@ -10,7 +10,7 @@ import androidx.room.PrimaryKey
         Index("bolusID"),
         Index("pumpSerial"),
         Index("timestamp"),
-    ]
+    ],
 )
 data class InsightBolusID(
     var timestamp: Long,
@@ -18,8 +18,7 @@ data class InsightBolusID(
     val bolusID: Int? = null,
     var startID: Long? = null,
     var endID: Long? = null,
-)
-{
+){
     @PrimaryKey(autoGenerate = true)
     var id: Long = 0
 }
