@@ -61,7 +61,7 @@ jobs:
         DROPBOX_APP_SECRET: ${{ secrets.DROPBOX_APP_SECRET }}
         DROPBOX_REFRESH_TOKEN: ${{ secrets.DROPBOX_REFRESH_TOKEN }}
         SOURCE_PATH: app/build/outputs/apk/full/release/app-full-release-unsigned-signed.apk
-        DEST_PATH: /MyFiles/File.txt
+        DEST_PATH: /MyFiles/app-full-release-unsigned-signed.apk
         
         # SOURCE_PATH:
         #   Path to file to upload
