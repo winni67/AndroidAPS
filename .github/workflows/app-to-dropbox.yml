@@ -53,7 +53,9 @@ jobs:
         # BUILD_TOOLS_VERSION: "35.0.2"
         BUILD_TOOLS_VERSION: ${{ env.BUILD_TOOL_VERSION }}
 
-    # Sign APK File
+    # Dropbox Upload
+    - name: Checkout
+      uses: actions/checkout@v4
     - name: Dropbox Upload
       uses: gomes042/gh-actions-dropbox/files/upload@2
       with:
