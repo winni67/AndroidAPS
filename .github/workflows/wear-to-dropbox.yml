@@ -28,7 +28,7 @@ jobs:
 
     # Run Build Project
     - name: Build with Gradle
-      run: ./gradlew app:assembleFullRelease
+      run: ./gradlew wear:assembleFullRelease
     
     # Setup build tool version variable
     - name: Setup build tool version variable
