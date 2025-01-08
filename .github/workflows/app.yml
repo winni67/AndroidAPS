@@ -1,4 +1,4 @@
-name: Build app version
+name: 5. Build app version
 
 on:
   # push:
