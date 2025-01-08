@@ -1,4 +1,4 @@
-name: Build wear version
+name: 6. Build wear version
 
 on:
   # push:
