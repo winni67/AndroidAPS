@@ -54,22 +54,13 @@ jobs:
         BUILD_TOOLS_VERSION: ${{ env.BUILD_TOOL_VERSION }}
 
     # Dropbox Upload
-    - name: Checkout
-      uses: actions/checkout@v4
-    - name: Dropbox Upload
-      uses: gomes042/gh-actions-dropbox/files/upload@2
+    - name: Upload to Dropbox
+      uses: Lewuathe/dropbox-github-action@v1
       with:
-        DROPBOX_APP_KEY: ${{ secrets.DROPBOX_APP_KEY }}
-        DROPBOX_APP_SECRET: ${{ secrets.DROPBOX_APP_SECRET }}
-        DROPBOX_REFRESH_TOKEN: ${{ secrets.DROPBOX_REFRESH_TOKEN }}
-        SOURCE_PATH: app/build/outputs/apk/full/release/app-full-release-unsigned-signed.apk
-        DEST_PATH: /MyFiles/app-full-release-unsigned-signed.apk
-        
-        # SOURCE_PATH:
-        #   Path to file to upload
-        #   (in container)
-
-        # DEST_PATH:
-        #   Destination file path
-        #   (relative to root of Dropbox account)
-        # app/build/outputs/apk/full/release/app-full-release-unsigned-signed.apk
+        dropbox-app-key: ${{ secrets.DROPBOX_APP_KEY }}
+        dropbox-app-secret: ${{ secrets.DROPBOX_APP_SECRET }}
+        dropbox-refresh-token: ${{ secrets.DROPBOX_REFRESH_TOKEN }}
+        source-path: app/build/outputs/apk/full/release/app-full-release-unsigned-signed.apk
+        target-path: /app-full-release-unsigned-signed.apk
+        # source-path: <Path to local file in the github action container space>
+        # target-path: <Path to the file in the Dropbox. That is supposed to be under the app folder>
