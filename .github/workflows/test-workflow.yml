@@ -44,6 +44,7 @@ jobs:
         echo "AAPS_VERSION=$AAPS_VERSION" >> $GITHUB_ENV
         echo AAPS version is: $AAPS_VERSION
         touch /tmp/AAPS-$AAPS_VERSION_master-app-full-release.txt
+        echo /tmp/AAPS-$AAPS_VERSION_master-app-full-release.txt
 
     # Sign APK File
     ## - name: Sign APK
