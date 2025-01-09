@@ -10,7 +10,7 @@ on:
   workflow_dispatch:
     inputs:
      branch:
-     #  description: "Branch auswählen"
+        description: "Branch auswählen"
         required: true
         default: "main"
 
