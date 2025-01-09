@@ -1,4 +1,4 @@
-name: 1. Build app version to dropbox
+name: Test Workflow
 
 on:
   # push:
@@ -27,8 +27,8 @@ jobs:
       run: chmod +x gradlew
 
     # Run Build Project
-    - name: Build with Gradle
-      run: ./gradlew app:assembleFullRelease
+    # - name: Build with Gradle
+    #  run: ./gradlew app:assembleFullRelease
     
     # Setup build tool version variable
     - name: Setup build tool version variable
@@ -38,20 +38,27 @@ jobs:
         echo "BUILD_TOOL_VERSION=$BUILD_TOOL_VERSION" >> $GITHUB_ENV
         echo Last build tool version is: $BUILD_TOOL_VERSION
 
+    - name: Set variables
+      run: |
+        AAPS_VERSION=$(grep 'const val appVersion' buildSrc/src/main/kotlin/Versions.kt | awk -F'"' '{print $2}' )
+        echo "AAPS_VERSION=$AAPS_VERSION" >> $GITHUB_ENV
+        echo AAPS version is: $AAPS_VERSION
+        touch 
+
     # Sign APK File
-    - name: Sign APK
-      uses: r0adkll/sign-android-release@v1
-      id: sign_app
-      with:
-        releaseDirectory: app/build/outputs/apk/full/release
-        signingKeyBase64: ${{ secrets.SIGNING_KEY }}
-        alias: ${{ secrets.KEY_ALIAS }}
-        keyStorePassword: ${{ secrets.KEY_STORE_PASSWORD }}
-        keyPassword: ${{ secrets.KEY_PASSWORD }}
-      env:
-        # override default build-tools version (29.0.3) -- optional
-        # BUILD_TOOLS_VERSION: "35.0.2"
-        BUILD_TOOLS_VERSION: ${{ env.BUILD_TOOL_VERSION }}
+    ## - name: Sign APK
+    ##  uses: r0adkll/sign-android-release@v1
+    ##  id: sign_app
+    ##  with:
+    ##    releaseDirectory: app/build/outputs/apk/full/release
+    ##    signingKeyBase64: ${{ secrets.SIGNING_KEY }}
+    ##    alias: ${{ secrets.KEY_ALIAS }}
+    ##    keyStorePassword: ${{ secrets.KEY_STORE_PASSWORD }}
+    ##    keyPassword: ${{ secrets.KEY_PASSWORD }}
+    ##  env:
+    ##    # override default build-tools version (29.0.3) -- optional
+    ##    # BUILD_TOOLS_VERSION: "35.0.2"
+    ##    BUILD_TOOLS_VERSION: ${{ env.BUILD_TOOL_VERSION }}
 
     # Dropbox Upload
     - name: Upload to Dropbox
@@ -60,7 +67,8 @@ jobs:
         dropbox-app-key: ${{ secrets.DROPBOX_APP_KEY }}
         dropbox-app-secret: ${{ secrets.DROPBOX_APP_SECRET }}
         dropbox-refresh-token: ${{ secrets.DROPBOX_REFRESH_TOKEN }}
-        source-path: app/build/outputs/apk/full/release/app-full-release-unsigned-signed.apk
-        target-path: /app-full-release-unsigned-signed.apk
+        source-path:
+        # source-path: app/build/outputs/apk/full/release/app-full-release-unsigned-signed.apk
+        # target-path: /app-full-release-unsigned-signed.apk
         # source-path: <Path to local file in the github action container space>
         # target-path: <Path to the file in the Dropbox. That is supposed to be under the app folder>
