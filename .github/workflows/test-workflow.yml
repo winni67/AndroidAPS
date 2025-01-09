@@ -43,8 +43,11 @@ jobs:
         AAPS_VERSION=$(grep 'const val appVersion' buildSrc/src/main/kotlin/Versions.kt | awk -F'"' '{print $2}' )
         echo "AAPS_VERSION=$AAPS_VERSION" >> $GITHUB_ENV
         echo AAPS version is: $AAPS_VERSION
+        BRANCH_NAME=${{ github.event.inputs.branch }}
+        echo AAPS branch name is: $BRANCH_NAME
         touch "/tmp/AAPS-${AAPS_VERSION}_master-app-full-release.txt"
         echo "/tmp/AAPS-${AAPS_VERSION}_master-app-full-release.txt"
+        
 
     # Sign APK File
     ## - name: Sign APK
