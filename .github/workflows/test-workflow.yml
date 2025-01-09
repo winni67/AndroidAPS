@@ -69,7 +69,7 @@ jobs:
         dropbox-app-secret: ${{ secrets.DROPBOX_APP_SECRET }}
         dropbox-refresh-token: ${{ secrets.DROPBOX_REFRESH_TOKEN }}
         source-path: "/tmp/AAPS-${{ env.AAPS_VERSION }}_master-app-full-release.txt"
-        target-path: "/AAPS-${{ env.AAPS_VERSION }}_master-app-full-release.txt"
+        target-path: "/AAPS-${{ env.AAPS_VERSION }}_${{ github.event.inputs.branch }}-app-full-release.txt"
         # source-path: app/build/outputs/apk/full/release/app-full-release-unsigned-signed.apk
         # target-path: /app-full-release-unsigned-signed.apk
         # source-path: <Path to local file in the github action container space>
