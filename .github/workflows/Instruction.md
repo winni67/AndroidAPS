@@ -14,6 +14,8 @@ These instructions allow you to build AndroidAPS with a browser.
    certutil keystore.jks SIGNING_KEY.txt
 2. Base64 encoding of the keystore file (on other plattforms with openssl):\
    openssl base64 < keystore.jks | tr -d '\n' | tee SIGNING_KEY.txt
+3. Base64 encoding of the keystore file (on macOS):\
+   base64 keystore.jks > SIGNING_KEY.txt
 
 
 ## Setup Github secrets for the keystore and the GPG encryption
