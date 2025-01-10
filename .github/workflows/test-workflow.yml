@@ -43,14 +43,8 @@ jobs:
         echo "BUILD_TOOL_VERSION=$BUILD_TOOL_VERSION" >> $GITHUB_ENV
         echo Last build tool version is: $BUILD_TOOL_VERSION
 
-    - name: Set variables
+    - name: Create dummy file
       run: |
-        AAPS_VERSION=$(grep 'const val appVersion' buildSrc/src/main/kotlin/Versions.kt | awk -F'"' '{print $2}' )
-        echo "AAPS_VERSION=$AAPS_VERSION" >> $GITHUB_ENV
-        echo AAPS version is: $AAPS_VERSION
-        echo "${{ toJson(github.event.inputs) }}"
-        BRANCH_NAME=${{ github.event.inputs.branch }}
-        echo AAPS branch name is: $BRANCH_NAME
         touch "/tmp/app-full-release-unsigned-signed.apk"
         ls -l /tmp
 
