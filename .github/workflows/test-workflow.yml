@@ -74,7 +74,7 @@ jobs:
     - name: Rename file
         run: |
           project_name="AAPS"
-          version=${{ github.event.inputs.version }}
+          version=$(grep 'const val appVersion' buildSrc/src/main/kotlin/Versions.kt | awk -F'"' '{print $2}' )
           branch=${{ github.event.inputs.branch }}
           original_file="app/build/outputs/apk/full/release/app-full-release-unsigned-signed.apk"
           new_file="${project_name}-${version}_${branch}-app-full-release.apk"
