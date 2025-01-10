@@ -45,6 +45,7 @@ jobs:
 
     - name: Create dummy file
       run: |
+        rm "/tmp/app-full-release-unsigned-signed.apk"
         touch "/tmp/app-full-release-unsigned-signed.apk"
         ls -l /tmp
 
@@ -84,9 +85,7 @@ jobs:
           fi
     # List files
     - name: List files
-      run: |
-          ls -l /tmp
-          rm "$new_file"
+      run: ls -l /tmp
           
     # Dropbox Upload
     - name: Upload to Dropbox
