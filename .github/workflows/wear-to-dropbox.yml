@@ -8,6 +8,11 @@ on:
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
+    inputs:
+     branch:
+        description: "Select branch"
+        required: true
+        default: "master"
 
 jobs:
   build:
@@ -53,6 +58,26 @@ jobs:
         # BUILD_TOOLS_VERSION: "35.0.2"
         BUILD_TOOLS_VERSION: ${{ env.BUILD_TOOL_VERSION }}
 
+    # Rename file
+    - name: Rename file
+      run: |
+          PROJECT_NAME="AAPS"
+          echo "PROJECT_NAME=$PROJECT_NAME" >> $GITHUB_ENV
+          VERSION=$(grep 'const val appVersion' buildSrc/src/main/kotlin/Versions.kt | awk -F'"' '{print $2}' )
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+          BRANCH=${{ github.event.inputs.branch }}
+          echo "BRANCH=$BRANCH" >> $GITHUB_ENV
+          original_file="wear/build/outputs/apk/full/release/wear-full-release-unsigned-signed.apk"
+          new_file="wear/build/outputs/apk/full/release/${PROJECT_NAME}-${VERSION}_${BRANCH}-wear-full-release.apk"
+
+          if [ -f "$original_file" ]; then
+            mv "$original_file" "$new_file"
+            echo "File has been renamed to: $new_file"
+          else
+            echo "Original file not found: $original_file"
+            exit 1
+          fi
+
     # Dropbox Upload
     - name: Upload to Dropbox
       uses: Lewuathe/dropbox-github-action@v1
@@ -60,7 +85,7 @@ jobs:
         dropbox-app-key: ${{ secrets.DROPBOX_APP_KEY }}
         dropbox-app-secret: ${{ secrets.DROPBOX_APP_SECRET }}
         dropbox-refresh-token: ${{ secrets.DROPBOX_REFRESH_TOKEN }}
-        source-path: wear/build/outputs/apk/full/release/wear-full-release-unsigned-signed.apk
-        target-path: /wear-full-release-unsigned-signed.apk
+        source-path: "wear/build/outputs/apk/full/release/${PROJECT_NAME}-${VERSION}_${BRANCH}-wear-full-release.apk"
+        target-path: "/${PROJECT_NAME}-${VERSION}_${BRANCH}-wear-full-release.apk"
         # source-path: <Path to local file in the github action container space>
         # target-path: <Path to the file in the Dropbox. That is supposed to be under the app folder>
