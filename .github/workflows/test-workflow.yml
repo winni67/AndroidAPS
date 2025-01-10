@@ -74,7 +74,6 @@ jobs:
           echo "branch=$branch" >> $GITHUB_ENV
           original_file="/tmp/app-full-release-unsigned-signed.apk"
           new_file="/tmp/${project_name}-${version}_${branch}-app-full-release.apk"
-          rm "$new_file"
 
           if [ -f "$original_file" ]; then
             mv "$original_file" "$new_file"
