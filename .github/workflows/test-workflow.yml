@@ -51,9 +51,8 @@ jobs:
         echo "${{ toJson(github.event.inputs) }}"
         BRANCH_NAME=${{ github.event.inputs.branch }}
         echo AAPS branch name is: $BRANCH_NAME
-        touch "/tmp/AAPS-${AAPS_VERSION}_master-app-full-release.txt"
-        echo "/tmp/AAPS-${AAPS_VERSION}_master-app-full-release.txt"
-        
+        touch "app/build/outputs/apk/full/release/app-full-release-unsigned-signed.apk"
+        ls -l app/build/outputs/apk/full/release/
 
     # Sign APK File
     ## - name: Sign APK
@@ -77,7 +76,7 @@ jobs:
           version=$(grep 'const val appVersion' buildSrc/src/main/kotlin/Versions.kt | awk -F'"' '{print $2}' )
           branch=${{ github.event.inputs.branch }}
           original_file="app/build/outputs/apk/full/release/app-full-release-unsigned-signed.apk"
-          new_file="${project_name}-${version}_${branch}-app-full-release.apk"
+          new_file="app/build/outputs/apk/full/release/${project_name}-${version}_${branch}-app-full-release.apk"
 
           if [ -f "$original_file" ]; then
             mv "$original_file" "$new_file"
