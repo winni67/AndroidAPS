@@ -84,8 +84,10 @@ jobs:
           fi
     # List files
     - name: List files
-      run: ls -l /tmp
-    
+      run: |
+          ls -l /tmp
+          rm "$new_file"
+          
     # Dropbox Upload
     - name: Upload to Dropbox
       uses: Lewuathe/dropbox-github-action@v1
