@@ -10,7 +10,7 @@ on:
   workflow_dispatch:
     inputs:
      branch:
-        description: "Branch auswählen"
+        description: "Select branch"
         required: true
         default: "master"
 
@@ -70,6 +70,26 @@ jobs:
     ##    # BUILD_TOOLS_VERSION: "35.0.2"
     ##    BUILD_TOOLS_VERSION: ${{ env.BUILD_TOOL_VERSION }}
 
+    # Rename file
+    - name: Rename file
+        run: |
+          project_name="AAPS"
+          version=${{ github.event.inputs.version }}
+          branch=${{ github.event.inputs.branch }}
+          original_file="app/build/outputs/apk/full/release/app-full-release-unsigned-signed.apk"
+          new_file="${project_name}-${version}_${branch}-app-full-release.apk"
+
+          if [ -f "$original_file" ]; then
+            mv "$original_file" "$new_file"
+            echo "File has been renamed to: $new_file"
+          else
+            echo "Original file not found: $original_file"
+            exit 1
+          fi
+    # List files
+    - name: List files
+        run: ls -l app/build/outputs/apk/full/release/
+    
     # Dropbox Upload
     - name: Upload to Dropbox
       uses: Lewuathe/dropbox-github-action@v1
