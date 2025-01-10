@@ -72,7 +72,7 @@ jobs:
 
     # Rename file
     - name: Rename file
-        run: |
+      run: |
           project_name="AAPS"
           version=$(grep 'const val appVersion' buildSrc/src/main/kotlin/Versions.kt | awk -F'"' '{print $2}' )
           branch=${{ github.event.inputs.branch }}
@@ -88,7 +88,7 @@ jobs:
           fi
     # List files
     - name: List files
-        run: ls -l app/build/outputs/apk/full/release/
+      run: ls -l app/build/outputs/apk/full/release/
     
     # Dropbox Upload
     - name: Upload to Dropbox
