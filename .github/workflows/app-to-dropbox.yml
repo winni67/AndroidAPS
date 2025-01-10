@@ -79,7 +79,7 @@ jobs:
           fi
     # List files
     - name: List files
-      run: ls -l /app/build/outputs/apk/full/release/
+      run: ls -l app/build/outputs/apk/full/release/
 
     # Dropbox Upload
     - name: Upload to Dropbox
