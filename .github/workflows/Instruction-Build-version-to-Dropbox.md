@@ -33,6 +33,7 @@ These instructions allow you to build AndroidAPS with a browser.
     * `DROPBOX_APP_KEY`
     * `DROPBOX_APP_SECRET`
     * `DROPBOX_REFRESH_TOKEN`\
+
 Note:\
 On Windows 10 or Windows 11 systems, the curl command is available.\
 But the command mentioned in the manual of dropbox-github-action has to be inserterted as one line, without the "\" sign. 
