@@ -27,16 +27,16 @@ These instructions allow you to build AndroidAPS with a browser.
     * `KEY_PASSWORD`
     * `SIGNING_KEY`
 1. For the Dropbox upload of the build AndroidAPS app, the following secrets have to be defined.\
+    * `DROPBOX_APP_KEY`
+    * `DROPBOX_APP_SECRET`
+    * `DROPBOX_REFRESH_TOKEN`
    See manual of dropbox-github-action on\
    https://github.com/marketplace/actions/dropbox-github-action \
    to define these three Github secrets.
-    * `DROPBOX_APP_KEY`
-    * `DROPBOX_APP_SECRET`
-    * `DROPBOX_REFRESH_TOKEN`\
-
    Note:\
    On Windows 10 or Windows 11 systems, the curl command is available.\
-   But the command mentioned in the manual of dropbox-github-action has to be inserterted as one line, without the "\\" sign. 
+   But the command mentioned in the manual of dropbox-github-action has to be inserterted as one line, without the "\\"
+   sign. 
 
 
 ## Build AndroidAPS
