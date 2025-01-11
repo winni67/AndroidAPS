@@ -47,6 +47,6 @@ These instructions allow you to build AndroidAPS with a browser.
 5. Then click on "Run workflow".
 
 
-## Upload of the build and signed app to Dropbox (direct through the workflow)
+## Upload the build and signed app to Dropbox (direct through the workflow)
 1. When the workflow (build, sign, upload to Dropbox) is completed,
    look into your Dropbox App and see the build and signed AAPS apk file.
