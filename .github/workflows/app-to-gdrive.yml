@@ -98,7 +98,6 @@ jobs:
       env:
         GDRIVE_FOLDER_ID: ${{ secrets.GDRIVE_FOLDER_ID }}
       run: |
-       # Python script to upload the APK file
         python <<EOF
         import os  # Import module for os functions
         from googleapiclient.discovery import build
