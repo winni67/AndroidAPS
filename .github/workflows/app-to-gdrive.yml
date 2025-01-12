@@ -97,6 +97,7 @@ jobs:
 
         # Python script to upload the APK file
         python <<EOF
+        import os  # Import module for os functions
         from googleapiclient.discovery import build
         from googleapiclient.http import MediaFileUpload
         from google.oauth2.service_account import Credentials
