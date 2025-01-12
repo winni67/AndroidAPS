@@ -35,11 +35,11 @@ First of all, you will need a **Google Service Account** for your project. Servi
 
 ## Prepare your new Google API key
 
-1. Base64 encoding of the Google API key file (on a Windows PC):\
+1. Base64 encoding of the Google API JSON key file (on a Windows PC):\
    certutil -encode google-api-key.json GDRIVE_CREDENTIALS.txt
-2. Base64 encoding of the Google API key file (on other plattforms with openssl):\
+2. Base64 encoding of the Google API JSON key file (on other plattforms with openssl):\
    openssl base64 < google-api-key.json | tr -d '\n' | tee GDRIVE_CREDENTIALS.txt
-3. Base64 encoding of the Google API key file (on macOS):\
+3. Base64 encoding of the Google API JSON key file (on macOS):\
    base64 google-api-key.json > GDRIVE_CREDENTIALS.txt
 
 ## Setup Github secrets for the Google Drive API
