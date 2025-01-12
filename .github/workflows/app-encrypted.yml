@@ -1,4 +1,4 @@
-name: 3. Build encrypted app version
+name: 4. Build encrypted app version
 
 on:
   # push:
