@@ -1,4 +1,4 @@
-name: 9. Build app version to gdrive
+name: 3. Build app version to gdrive
 
 on:
   # push:
