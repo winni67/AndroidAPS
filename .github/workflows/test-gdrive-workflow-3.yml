@@ -1,0 +1,78 @@
+name: Upload APK to Google Drive
+
+on:
+  workflow_dispatch: # Ermöglicht manuelles Ausführen des Workflows
+    inputs:
+      version:
+        description: "Version der APK"
+        required: true
+        default: "1.0.0"
+
+jobs:
+  upload-to-drive:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Repository auschecken
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      # Setze Version und andere Umgebungsvariablen
+      - name: Set Environment Variables
+        run: echo "VERSION=${{ github.event.inputs.version }}" >> $GITHUB_ENV
+
+      # Google Credentials speichern
+      - name: Decode and Save Google Drive Credentials
+        run: |
+          echo "${{ secrets.GDRIVE_CREDENTIALS_BASE64 }}" | base64 --decode > credentials.json
+
+      # Python einrichten
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+
+      # Abhängigkeiten installieren
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib
+
+      # APK-Datei hochladen
+      - name: Upload APK to Google Drive
+        env:
+          GDRIVE_FOLDER_ID: ${{ secrets.GDRIVE_FOLDER_ID }}
+          VERSION: ${{ env.VERSION }}
+        run: |
+          python <<EOF
+          import os
+          from googleapiclient.discovery import build
+          from googleapiclient.http import MediaFileUpload
+          from google.oauth2.service_account import Credentials
+
+          # Google Drive Authentifizierung
+          credentials = Credentials.from_service_account_file('credentials.json')
+          service = build('drive', 'v3', credentials=credentials)
+
+          # Datei- und Pfadinformationen
+          version = os.getenv('VERSION', 'default_version')
+          folder_id = os.getenv('GDRIVE_FOLDER_ID', '')
+          file_name = f"project-{version}-app-full-release.apk"
+          local_file_path = f"output/{file_name}"  # Lokaler Speicherort der Datei
+
+          # Check ob Datei existiert
+          if not os.path.exists(local_file_path):
+              raise FileNotFoundError(f"Die Datei {local_file_path} existiert nicht.")
+
+          # Datei-Metadaten für Google Drive
+          file_metadata = {
+              'name': file_name,
+              'parents': [folder_id],  # Zielordner auf Google Drive
+          }
+
+          # Datei hochladen
+          media = MediaFileUpload(local_file_path, mimetype='application/vnd.android.package-archive')
+          uploaded_file = service.files().create(body=file_metadata, media_body=media, fields='id').execute()
+
+          print(f"Datei erfolgreich hochgeladen: {uploaded_file.get('id')} unter dem Namen {file_name}.")
+          EOF
