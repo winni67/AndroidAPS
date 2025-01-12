@@ -28,6 +28,30 @@ These instructions allow you to build AndroidAPS with a browser.
     * `SIGNING_KEY`
 1. For the Google Drive upload of the build AndroidAPS app, the following secrets have to be defined:
     * `GDRIVE_CREDENTIALS`
+    * `GDRIVE_FOLDER_ID`
+
+### Google Service Account (GSA)
+First of all, you will need a **Google Service Account** for your project. Service accounts are specific Google account types used by services instead of people. To create one, go to [*Service Accounts*](https://console.cloud.google.com/apis/credentials) in the *IAM and administration* section of the **Google Cloud Platform** dashboard. Create a new project or choose an existing one. Click on create new service account and continue with the process. At the end, you will get the option to generate a key. **Store this key safely**. It's a JSON file.
+
+## Prepare your new Google API key
+
+1. Base64 encoding of the Google API key file (on a Windows PC):\
+   certutil -encode google-api-key.json GDRIVE_CREDENTIALS.txt
+2. Base64 encoding of the Google API key file (on other plattforms with openssl):\
+   openssl base64 < google-api-key.json | tr -d '\n' | tee GDRIVE_CREDENTIALS.txt
+3. Base64 encoding of the Google API key file (on macOS):\
+   base64 google-api-key.json > GDRIVE_CREDENTIALS.txt
+
+## Setup Github secrets for the Google Drive API
+
+1. In the forked AndroidAPS repository, go to Settings -> Secrets and variables -> Actions.
+1. Add the new repository secret GDRIVE_CREDENTIALS.\
+   As value for the secret GDRIVE_CREDENTIALS use the text out of the file GDRIVE_CREDENTIALS.txt,\
+   which is stored between the two lines --BEGIN CERTIFICATE-- and --END CERTIFICATE--.  
+
+### Share Drive folder with the GSA
+
+Go to your **Google Drive** and find the folder you want your files to be uploaded to and share it with the Google Service Account (GSA). You can find your service account email address in the `client_email` property of your Google Service Account (GSA) credentials. While you are here, take note of **the folder's ID**, the long set of characters after the last `/` in your address bar if you have the folder opened in your browser and store it as new Github secret named GDRIVE_FOLDER_ID.
 
 ## Build AndroidAPS
 1. On your forked AndroidAPS repository, go to Actions.
