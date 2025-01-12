@@ -49,7 +49,7 @@ First of all, you will need a **Google Service Account** for your project. Servi
    As value for the secret GDRIVE_CREDENTIALS use the text out of the file GDRIVE_CREDENTIALS.txt,\
    which is stored between the two lines --BEGIN CERTIFICATE-- and --END CERTIFICATE--.  
 
-### Share Drive folder with the GSA
+### Share Drive folder with the Google Service Account (GSA)
 
 Go to your **Google Drive** and find the folder you want your files to be uploaded to and share it with the Google Service Account (GSA). You can find your service account email address in the `client_email` property of your Google Service Account (GSA) credentials. While you are here, take note of **the folder's ID**, the long set of characters after the last `/` in your address bar if you have the folder opened in your browser and store it as new Github secret named GDRIVE_FOLDER_ID.
 
