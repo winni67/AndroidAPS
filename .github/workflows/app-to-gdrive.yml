@@ -106,8 +106,13 @@ jobs:
         service = build('drive', 'v3', credentials=credentials)
 
         # File to upload
-        file_metadata = {'name': '/${PROJECT_NAME}-${VERSION}_${BRANCH}-app-full-release-${{ github.run_number }}.apk'}  # Name of the file in Google Drive
-        media = MediaFileUpload('app/build/outputs/apk/full/release/${PROJECT_NAME}-${VERSION}_${BRANCH}-app-full-release.apk', mimetype='application/vnd.android.package-archive')
+        project_name = os.getenv('PROJECT_NAME')
+        version = os.getenv('VERSION')
+        branch = os.getenv('BRANCH')
+        file_name = "{project_name}-{version}_{branch}-app-full-release.apk"
+        file_path = os.path.join('app/build/outputs/apk/full/release/', file_name)
+        file_metadata = {'name': file_name}  # Name of the file in Google Drive
+        media = MediaFileUpload(file_path, mimetype='application/vnd.android.package-archive')
 
         # Upload the file
         file = service.files().create(body=file_metadata, media_body=media, fields='id').execute()
