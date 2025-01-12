@@ -110,8 +110,13 @@ jobs:
         project_name = os.getenv('PROJECT_NAME')
         version = os.getenv('VERSION')
         branch = os.getenv('BRANCH')
-        file_name = "{project_name}-{version}_{branch}-app-full-release.apk"
+        print(f"Projectname: {project_name}")
+        print(f"Version: {version}")
+        print(f"Branch: {branch}")
+        file_name = f"{project_name}-{version}_{branch}-app-full-release.apk"
         file_path = os.path.join('app/build/outputs/apk/full/release/', file_name)
+        print(f":Filename: {file_name}")
+        print(f":Filepath: {file_path}")
         file_metadata = {'name': file_name}  # Name of the file in Google Drive
         media = MediaFileUpload(file_path, mimetype='application/vnd.android.package-archive')
 
