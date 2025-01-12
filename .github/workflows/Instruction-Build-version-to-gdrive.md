@@ -51,16 +51,20 @@ First of all, you will need a **Google Service Account** for your project. Servi
 
 ### Share Drive folder with the Google Service Account (GSA)
 
-Go to your **Google Drive** and find the folder you want your files to be uploaded to and share it with the Google Service Account (GSA). You can find your service account email address in the `client_email` property of your Google Service Account (GSA) credentials. While you are here, take note of **the folder's ID**, the long set of characters after the last `/` in your address bar if you have the folder opened in your browser and store it as new Github secret named GDRIVE_FOLDER_ID.
+Go to your **Google Drive** and find the folder you want your files to be uploaded to and share it with the Google Service Account (GSA). You can find your service account email address in the `client_email` property of your Google Service Account (GSA) credentials.
+
+### Setup Github secret for the upload folder on Google Drive
+
+Go to your **Google Drive** and find the folder you want your files to be uploaded to and take note of **the folder's ID**, the long set of characters after the last `/` in your browsers address bar. Store it as new Github secret named GDRIVE_FOLDER_ID.
 
 ## Build AndroidAPS
 1. On your forked AndroidAPS repository, go to Actions.
 2. If not already done, activate workflow on your repository.
-3. On the left side, select the workflow "Build app version to dropbox".
+3. On the left side, select the workflow "Build app version to gdrive".
 4. On the right side, click on the drop down menue "Run workflow" and select "Branch: master" which is the default value.
 5. Then click on "Run workflow".
 
 
 ## Upload the build and signed app to Google Drive (direct through the workflow)
-1. When the workflow (build, sign, upload to Dropbox) is completed,
-   look into your Dropbox App and see the build and signed AAPS apk file.
+1. When the workflow (build, sign, upload to Google Drive) is completed,
+   look into your Google Drive App and see the build and signed AAPS apk file.
