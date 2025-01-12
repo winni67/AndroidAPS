@@ -96,11 +96,9 @@ jobs:
 
     - name: Upload APK to Google Drive
       env:
-        GDRIVE_CREDENTIALS: ${{ secrets.GDRIVE_CREDENTIALS }}
+        GDRIVE_FOLDER_ID: ${{ secrets.GDRIVE_FOLDER_ID }}
       run: |
-        echo "${GDRIVE_CREDENTIALS}" > credentials.json
-
-        # Python script to upload the APK file
+       # Python script to upload the APK file
         python <<EOF
         import os  # Import module for os functions
         from googleapiclient.discovery import build
