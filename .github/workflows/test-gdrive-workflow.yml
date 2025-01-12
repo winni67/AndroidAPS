@@ -1,0 +1,49 @@
+name: Upload to Google Drive
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  upload-to-drive:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib
+
+      - name: Upload file to Google Drive
+        env:
+          GDRIVE_CREDENTIALS: ${{ secrets.GDRIVE_CREDENTIALS }}
+        run: |
+          echo "${GDRIVE_CREDENTIALS}" > credentials.json
+
+          # Python script to upload file
+          python <<EOF
+          from googleapiclient.discovery import build
+          from googleapiclient.http import MediaFileUpload
+          from google.oauth2.service_account import Credentials
+
+          # Authenticate with Google Drive API
+          credentials = Credentials.from_service_account_file('credentials.json')
+          service = build('drive', 'v3', credentials=credentials)
+
+          # File to upload
+          file_metadata = {'name': 'uploaded_file.txt'}
+          media = MediaFileUpload('path/to/your/local/file.txt', mimetype='text/plain')
+
+          # Upload the file
+          file = service.files().create(body=file_metadata, media_body=media, fields='id').execute()
+          print(f"File ID: {file.get('id')}")
+          EOF
