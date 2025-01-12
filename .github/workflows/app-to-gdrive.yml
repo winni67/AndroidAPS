@@ -78,6 +78,11 @@ jobs:
             exit 1
           fi
 
+    # Decode and Save Google Credentials
+    - name: Decode and Save Google Credentials
+      run: |
+        echo "${{ secrets.GDRIVE_CREDENTIALS }}" | base64 --decode > credentials.json
+
     # Upload APK to Google Drive
     - name: Set up Python
       uses: actions/setup-python@v4
