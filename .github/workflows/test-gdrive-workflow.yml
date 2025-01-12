@@ -1,4 +1,4 @@
-name: Upload to Google Drive
+name: Upload APK to Google Drive
 
 on:
   push:
@@ -23,13 +23,13 @@ jobs:
           python -m pip install --upgrade pip
           pip install google-api-python-client google-auth google-auth-httplib2 google-auth-oauthlib
 
-      - name: Upload file to Google Drive
+      - name: Upload APK to Google Drive
         env:
           GDRIVE_CREDENTIALS: ${{ secrets.GDRIVE_CREDENTIALS }}
         run: |
           echo "${GDRIVE_CREDENTIALS}" > credentials.json
 
-          # Python script to upload file
+          # Python script to upload the APK file
           python <<EOF
           from googleapiclient.discovery import build
           from googleapiclient.http import MediaFileUpload
@@ -40,10 +40,10 @@ jobs:
           service = build('drive', 'v3', credentials=credentials)
 
           # File to upload
-          file_metadata = {'name': 'uploaded_file.txt'}
-          media = MediaFileUpload('path/to/your/local/file.txt', mimetype='text/plain')
+          file_metadata = {'name': 'my-app.apk'}  # Name of the file in Google Drive
+          media = MediaFileUpload('path/to/your/local/app.apk', mimetype='application/vnd.android.package-archive')
 
           # Upload the file
           file = service.files().create(body=file_metadata, media_body=media, fields='id').execute()
-          print(f"File ID: {file.get('id')}")
+          print(f"File uploaded successfully. File ID: {file.get('id')}")
           EOF
