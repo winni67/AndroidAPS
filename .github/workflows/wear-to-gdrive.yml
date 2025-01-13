@@ -97,6 +97,7 @@ jobs:
     - name: Upload APK to Google Drive
       env:
         GDRIVE_FOLDER_ID: ${{ secrets.GDRIVE_FOLDER_ID }}
+        RUN_NUMBER: ${{ github.run_number }}
       run: |
         python <<EOF
         import os  # Import module for os functions
@@ -113,15 +114,18 @@ jobs:
         version = os.getenv('VERSION')
         branch = os.getenv('BRANCH')
         folder_id = os.getenv('GDRIVE_FOLDER_ID', '')
+        run_number = os.getenv('RUN_NUMBER', '0')
         print(f"Projectname: {project_name}")
         print(f"Version: {version}")
         print(f"Branch: {branch}")
-        file_name = f"{project_name}-{version}_{branch}-wear-full-release.apk"
-        file_path = os.path.join('wear/build/outputs/apk/full/release/', file_name)
-        print(f":Filename: {file_name}")
-        print(f":Filepath: {file_path}")
+        file_name_local = f"{project_name}-{version}_{branch}-wear-full-release.apk"
+        file_name_gdrive = f"{project_name}-{version}_{branch}-app-full-release-{run_number}.apk"
+        file_path = os.path.join('wear/build/outputs/apk/full/release/', file_name_local)
+        print(f"Filename: {file_name_local}")
+        print(f"Filename with path: {file_path}")
+        print(f"Filename_gdrive: {file_name_gdrive}")
         file_metadata = {
-            'name': file_name,       # name of the file in Google Drive
+            'name': file_name_gdrive,       # name of the file in Google Drive
             'parents': [folder_id],  # destination folder on Google Drive
         }
         media = MediaFileUpload(file_path, mimetype='application/vnd.android.package-archive')
