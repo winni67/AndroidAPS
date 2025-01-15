@@ -14,7 +14,7 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
-        python-version: "3.x"
+        python-version: "3.9"
 
     - name: Install dependencies
       run: |
@@ -23,24 +23,24 @@ jobs:
 
     - name: Delete file from Google Drive
       env:
-        SERVICE_ACCOUNT_JSON: ${{ secrets.SERVICE_ACCOUNT_JSON }}
-        FILE_ID: "your-file-id"
+        FILE_ID: "1feDecS0_-n1keo65Ap6FFF1VMqsJjgqo"
       run: |
-        echo "${{ secrets.SERVICE_ACCOUNT_JSON }}" > service-account-key.json
+        echo "${{ secrets.GDRIVE_CREDENTIALS }}" | base64 --decode > credentials.json
         python <<EOF
         from googleapiclient.discovery import build
         from google.oauth2.service_account import Credentials
 
-        # Datei-ID aus Umgebungsvariable
+        # Define variable file_id from FILE_ID
         file_id = "${{ env.FILE_ID }}"
 
-        # Authentifizierung
-        scopes = ['https://www.googleapis.com/auth/drive']
-        creds = Credentials.from_service_account_file('service-account-key.json', scopes=scopes)
-        service = build('drive', 'v3', credentials=creds)
+        # Authenticate with Google Drive API
+        # scopes = ['https://www.googleapis.com/auth/drive']
+        credentials = Credentials.from_service_account_file('credentials.json')
+        # credentials = Credentials.from_service_account_file('credentials.json', scopes=scopes)
+        service = build('drive', 'v3', credentials=credentials)
 
         try:
-            # Datei löschen
+            # Delete file
             service.files().delete(fileId=file_id).execute()
             print(f"File with ID {file_id} has been deleted successfully.")
         except Exception as e:
