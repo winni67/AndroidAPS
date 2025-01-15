@@ -119,7 +119,7 @@ jobs:
         print(f"Version: {version}")
         print(f"Branch: {branch}")
         file_name_local = f"{project_name}-{version}_{branch}-wear-full-release.apk"
-        file_name_gdrive = f"{project_name}-{version}_{branch}-app-full-release-{run_number}.apk"
+        file_name_gdrive = f"{project_name}-{version}_{branch}-wear-full-release-{run_number}.apk"
         file_path = os.path.join('wear/build/outputs/apk/full/release/', file_name_local)
         print(f"Filename: {file_name_local}")
         print(f"Filename with path: {file_path}")
@@ -132,5 +132,5 @@ jobs:
 
         # Upload the file
         file = service.files().create(body=file_metadata, media_body=media, fields='id').execute()
-        print("File uploaded successfully.")
+        print(f"File uploaded successfully with file name: {file_name_gdrive}")
         EOF
