@@ -132,5 +132,5 @@ jobs:
 
         # Upload the file
         file = service.files().create(body=file_metadata, media_body=media, fields='id').execute()
-        print("File uploaded successfully.")
+        print(f"File uploaded successfully with file name: {file_name_gdrive}")
         EOF
