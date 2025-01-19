@@ -108,8 +108,8 @@ Keep the `refresh_token` for later use.
 1. Add the new repository secret GOOGLE_CLIENT_SECRET_JSON.\
    As value for the secret GOOGLE_CLIENT_SECRET_JSON use the text out of the file GOOGLE_CLIENT_SECRET_JSON.txt,\
    which is stored between the two lines --BEGIN CERTIFICATE-- and --END CERTIFICATE--.  
-2. Add the new repository secret GOOGLE_CLIENT_ID and enter the value you note above.\
-3. Add the new repository secret GOOGLE_REFRESH_TOKEN and enter the value you note above.\
+2. Add the new repository secret GOOGLE_CLIENT_ID and enter the value you note above.
+3. Add the new repository secret GOOGLE_REFRESH_TOKEN and enter the value you note above.
 
 ### Setup Github secret GOOGLE_DRIVE_FOLDER_ID for the upload folder on Google Drive
 
