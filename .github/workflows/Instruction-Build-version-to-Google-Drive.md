@@ -68,7 +68,11 @@ $ curl -X POST https://oauth2.googleapis.com/token \
     -d grant_type=authorization_code \
     -d redirect_uri=http://localhost
 ```
-
+   Note:\
+   On Windows 10 or Windows 11 systems, the curl command is available.\
+   But the command above has to be inserterted as one line, without the "\\"
+   sign. 
+   
 The response will be like the following.
 
 ```
@@ -104,11 +108,12 @@ Keep the `refresh_token` for later use.
 1. Add the new repository secret GOOGLE_CLIENT_SECRET_JSON.\
    As value for the secret GOOGLE_CLIENT_SECRET_JSON use the text out of the file GOOGLE_CLIENT_SECRET_JSON.txt,\
    which is stored between the two lines --BEGIN CERTIFICATE-- and --END CERTIFICATE--.  
+2. Add the new repository secret GOOGLE_CLIENT_ID and enter the value you note above.\
+3. Add the new repository secret GOOGLE_REFRESH_TOKEN and enter the value you note above.\
 
+### Setup Github secret GOOGLE_DRIVE_FOLDER_ID for the upload folder on Google Drive
 
-### Setup Github secret for the upload folder on Google Drive
-
-Go to your **Google Drive** and find the folder you want your files to be uploaded to and take note of **the folder's ID**, the long set of characters after the last `/` in your browsers address bar. Store it as new Github secret named GOOGLE_DRIVE_FOLDER_ID. If you only want to store it in the root of your Google Drive filesystem, then enter the value "root" (without quotation marks) as value for the secret GOOGLE_DRIVE_FOLDER_ID.
+Go to your **Google Drive** and find the folder you want your files to be uploaded to and take note of **the folder's ID**, the long set of characters after the last `/` in your browsers address bar. Store it as new Github secret named GOOGLE_DRIVE_FOLDER_ID. If you only want to store it in the root folder of your Google Drives filesystem, then enter the value "root" (without quotation marks) as value for the secret GOOGLE_DRIVE_FOLDER_ID.
 
 ## Build AndroidAPS
 1. On your forked AndroidAPS repository, go to Actions.
