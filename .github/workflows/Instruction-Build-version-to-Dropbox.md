@@ -42,7 +42,7 @@ These instructions allow you to build AndroidAPS with a browser.
 ## Build AndroidAPS
 1. On your forked AndroidAPS repository, go to Actions.
 2. If not already done, activate workflow on your repository.
-3. On the left side, select the workflow "Build app version to dropbox".
+3. On the left side, select the workflow "Build app version to Dropbox".
 4. On the right side, click on the drop down menue "Run workflow" and select "Branch: master" which is the default value.
 5. Then click on "Run workflow".
 
