@@ -34,10 +34,10 @@ These instructions allow you to build AndroidAPS with a browser.
 3. Enable the Google Drive API [API & Services -> Library](https://console.cloud.google.com/apis/library), search for "Google Drive API" and click Enable.
 4. Create Credentials for OAuth 2.0 Client IDs. Go to [API & Services -> Credentials](https://console.cloud.google.com/apis/credentials), click "Create Credentials" -> "OAuth Client ID".\
    If prompted, configure the OAuth Consent Screen
-   1. Choose "External" (for personal use
-   2. Enter an App Name and your email address
-   3. Click "Save & Continue" until you reach the last page
-   4. Click "Back to Dashboard"
+ 1. Choose "External" (for personal use
+ 2. Enter an App Name and your email address
+ 3. Click "Save & Continue" until you reach the last page
+ 4. Click "Back to Dashboard"
 4. Now create your OAuth credentials:
 5. Download the client_secret.json file
 
