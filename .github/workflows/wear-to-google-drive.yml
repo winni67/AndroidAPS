@@ -1,4 +1,4 @@
-name: 3. Build app version to Google Drive
+name: 3. Build wear version to Google Drive
 
 on:
   # push:
@@ -33,7 +33,7 @@ jobs:
 
     # Run Build Project
     - name: Build with Gradle
-      run: ./gradlew app:assembleFullRelease
+      run: ./gradlew wear:assembleFullRelease
     
     # Setup build tool version variable
     - name: Setup build tool version variable
@@ -46,9 +46,9 @@ jobs:
     # Sign APK File
     - name: Sign APK
       uses: r0adkll/sign-android-release@v1
-      id: sign_app
+      id: sign_wear
       with:
-        releaseDirectory: app/build/outputs/apk/full/release
+        releaseDirectory: wear/build/outputs/apk/full/release
         signingKeyBase64: ${{ secrets.SIGNING_KEY }}
         alias: ${{ secrets.KEY_ALIAS }}
         keyStorePassword: ${{ secrets.KEY_STORE_PASSWORD }}
@@ -67,8 +67,8 @@ jobs:
           echo "VERSION=$VERSION" >> $GITHUB_ENV
           BRANCH=${{ github.event.inputs.branch }}
           echo "BRANCH=$BRANCH" >> $GITHUB_ENV
-          original_file="app/build/outputs/apk/full/release/app-full-release-unsigned-signed.apk"
-          new_file="app/build/outputs/apk/full/release/${PROJECT_NAME}-${VERSION}_${BRANCH}-app-full-release.apk"
+          original_file="wear/build/outputs/apk/full/release/wear-full-release-unsigned-signed.apk"
+          new_file="wear/build/outputs/apk/full/release/${PROJECT_NAME}-${VERSION}_${BRANCH}-wear-full-release.apk"
 
           if [ -f "$original_file" ]; then
             mv "$original_file" "$new_file"
@@ -123,9 +123,9 @@ jobs:
         print(f"Projectname: {PROJECT_NAME}")
         print(f"Version: {VERSION}")
         print(f"Branch: {BRANCH}")
-        FILE_NAME_LOCAL = f"{PROJECT_NAME}-{VERSION}_{BRANCH}-app-full-release.apk"
-        FILE_NAME_GOOGLE_DRIVE = f"{PROJECT_NAME}-{VERSION}_{BRANCH}-app-full-release-{RUN_NUMBER}.apk"
-        FILE_PATH = os.path.join('app/build/outputs/apk/full/release/', FILE_NAME_LOCAL)
+        FILE_NAME_LOCAL = f"{PROJECT_NAME}-{VERSION}_{BRANCH}-wear-full-release.apk"
+        FILE_NAME_GOOGLE_DRIVE = f"{PROJECT_NAME}-{VERSION}_{BRANCH}-wear-full-release-{RUN_NUMBER}.apk"
+        FILE_PATH = os.path.join('wear/build/outputs/apk/full/release/', FILE_NAME_LOCAL)
         print(f"Filename: {FILE_NAME_LOCAL}")
         print(f"Filename with path: {FILE_PATH}")
         print(f"Filename_Google_Drive: {FILE_NAME_GOOGLE_DRIVE}")
