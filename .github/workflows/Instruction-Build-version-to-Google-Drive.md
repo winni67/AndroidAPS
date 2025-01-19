@@ -35,16 +35,19 @@ These instructions allow you to build AndroidAPS with a browser.
 4. Create Credentials for OAuth 2.0 Client IDs. Go to [API & Services -> Credentials](https://console.cloud.google.com/apis/credentials), click "Create Credentials" -> "OAuth Client ID".\
    If prompted, configure the OAuth Consent Screen
    * Choose "External" (for personal use)
-   * Enter an App Name and your email address
+   * Enter an App Name
+   * Click "Add user" and add your email address
    * Click "Save & Continue" until you reach the last page
    * Click "Back to Dashboard"
-4. Now create your OAuth credentials:
+5. Now create your OAuth credentials:
    * select "Web Application" as application type
    * Click Create
    * Click "Download JSON" (this will be your client_secret.json file)
    * Save it securely, as it is required for API access
-6. Get a refresh token (using curl)
-
+   * Note the value for client_id (from the client_secret-json file)
+   * Note the value for client_secret (from the client_secret-json file)
+6. Get a refresh token
+   
 ## Prepare your new Google API key
 
 1. Base64 encoding of the Google API JSON key file (on a Windows PC):\
