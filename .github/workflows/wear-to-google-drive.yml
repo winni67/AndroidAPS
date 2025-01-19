@@ -1,4 +1,4 @@
-name: 3. Build wear version to Google Drive
+name: 4. Build wear version to Google Drive
 
 on:
   # push:
