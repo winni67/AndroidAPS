@@ -42,11 +42,46 @@ These instructions allow you to build AndroidAPS with a browser.
 5. Now create your OAuth credentials:
    * select "Web Application" as application type
    * Click Create
+   * Define the "Redirect URI" as "http://localhost"
    * Click "Download JSON" (this will be your client_secret.json file)
    * Save it securely, as it is required for API access
-   * Note the value for client_id (from the client_secret-json file)
-   * Note the value for client_secret (from the client_secret-json file)
-6. Get a refresh token
+   * Note the value for GOOGLE_CLIENT_ID (value of client_id in the client_secret-json file)
+   * Note the value for GOOGLE_CLIENT_SECRET (value of client_secret in the client_secret-json file)
+
+## Generate the refresh token
+
+Visit the following URI in your browser to get the authorization code.
+
+```
+https://accounts.google.com/o/oauth2/auth?client_id=CLIENT_ID&response_type=code&scope=https://www.googleapis.com/auth/drive&redirect_uri=http://localhost&access_type=offline
+```
+The response is like:\
+http://localhost/?code={AUTHORIZATION_CODE}&scope=https://www.googleapis.com/auth/drive
+
+Then, we can get the refresh token by the following command. Please use the authorization code you have just got in the previous step in the browser.
+Take care, the authorisation code gets invalid after a short time. So you have to renew it at short intervals.
+```
+$ curl -X POST https://oauth2.googleapis.com/token \
+    -d client_id=YOUR_CLIENT_ID \
+    -d client_secret=YOUR_CLIENT_SECRET \
+    -d code=AUTHORIZATION_CODE \
+    -d grant_type=authorization_code \
+    -d redirect_uri=http://localhost
+```
+
+The response will be like the following.
+
+```
+{
+  "access_token": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+  "expires_in": 3599,
+  "refresh_token": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+  "scope": "https://www.googleapis.com/auth/drive",
+  "token_type": "Bearer"
+}
+```
+
+Keep the `refresh_token` for later use.
    
 ## Prepare your new Google API key
 
