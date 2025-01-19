@@ -28,10 +28,11 @@ These instructions allow you to build AndroidAPS with a browser.
     * `SIGNING_KEY`
 
 
-### Create a Google API Access
-1. Create a Google Cloud project and activate the Google Drive API.
-2. Create Credentials for OAuth 2.0 Client IDs
-3. Download the client_secret.json file
+### Set up Google API access and download the JSON file
+1. Create a Google Cloud project
+2. Enable the Google Drive API.
+3. Create Credentials for OAuth 2.0 Client IDs
+4. Download the client_secret.json file
 
 ## Prepare your new Google API key
 
