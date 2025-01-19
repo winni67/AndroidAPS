@@ -59,7 +59,7 @@ The response is like:\
 http://localhost/?code={AUTHORIZATION_CODE}&scope=https://www.googleapis.com/auth/drive
 
 Then, we can get the refresh token by the following command. Please use the authorization code you have just got in the previous step in the browser.
-Take care, the authorisation code gets invalid after a short time. So you have to renew it at short intervals.
+Take care, the authorisation code gets invalid after a short time. So you have to renew it in this case.
 ```
 $ curl -X POST https://oauth2.googleapis.com/token \
     -d client_id=YOUR_CLIENT_ID \
