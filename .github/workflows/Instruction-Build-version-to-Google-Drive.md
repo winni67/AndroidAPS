@@ -34,9 +34,9 @@ These instructions allow you to build AndroidAPS with a browser.
     * `GOOGLE_REFRESH_TOKEN`
 
 ### Create a Google API Access
-Create a Google Cloud project and activate the Google Drive API.
-Create Credentials for OAuth 2.0 Client IDs
-Download the client_secret.json file
+1. Create a Google Cloud project and activate the Google Drive API.
+2. Create Credentials for OAuth 2.0 Client IDs
+3. Download the client_secret.json file
 
 ## Prepare your new Google API key
 
