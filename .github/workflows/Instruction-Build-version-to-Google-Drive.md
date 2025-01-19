@@ -18,7 +18,7 @@ These instructions allow you to build AndroidAPS with a browser.
    base64 keystore.jks > SIGNING_KEY.txt
 
 
-## Setup Github secrets for the keystore and the Google Drive API
+## Setup Github secrets for the keystore
 
 1. In the forked AndroidAPS repository, go to Settings -> Secrets and variables -> Actions.
 1. For each of the following secrets, tap on "New repository secret", then add the name of the secret, along with the value you defined during keystore creation time. As value for the secret SIGNING_KEY use the text out of the file SIGNING_KEY.txt, which is stored between the two lines --BEGIN CERTIFICATE-- and --END CERTIFICATE--.  
@@ -26,12 +26,7 @@ These instructions allow you to build AndroidAPS with a browser.
     * `KEY_ALIAS`
     * `KEY_PASSWORD`
     * `SIGNING_KEY`
-1. For the Google Drive upload of the build AndroidAPS app, the following secrets have to be defined:
-    * `GOOGLE_DRIVE_FOLDER_ID`
-    * `GOOGLE_CLIENT_ID`
-    * `GOOGLE_CLIENT_SECRET`
-    * `GOOGLE_CLIENT_SECRET_JSON`
-    * `GOOGLE_REFRESH_TOKEN`
+
 
 ### Create a Google API Access
 1. Create a Google Cloud project and activate the Google Drive API.
@@ -48,6 +43,12 @@ These instructions allow you to build AndroidAPS with a browser.
    base64 client_secret.json > GOOGLE_CLIENT_SECRET_JSON.txt
 
 ## Setup Github secrets for the Google Drive API
+1. For the Google Drive upload of the build AndroidAPS app, the following secrets have to be defined:
+    * `GOOGLE_DRIVE_FOLDER_ID`
+    * `GOOGLE_CLIENT_ID`
+    * `GOOGLE_CLIENT_SECRET`
+    * `GOOGLE_CLIENT_SECRET_JSON`
+    * `GOOGLE_REFRESH_TOKEN`
 
 1. In the forked AndroidAPS repository, go to Settings -> Secrets and variables -> Actions.
 1. Add the new repository secret GOOGLE_CLIENT_SECRET_JSON.\
