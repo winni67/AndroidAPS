@@ -1,4 +1,4 @@
-name: 2. Build wear version to dropbox
+name: 2. Build wear version to Dropbox
 
 on:
   # push:
