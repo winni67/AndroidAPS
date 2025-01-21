@@ -37,7 +37,8 @@ These instructions allow you to build AndroidAPS with a browser.
    * Choose "External" (for personal use)
    * Enter an App Name
    * Click "Add user" and add your email address
-   * If possible, chose "Publishing status" to "In production", otherwise the later defined refresh token is only valid for 7 days.
+   * If possible, chose "Publishing status" to "In production",\
+     otherwise the later defined refresh token is only valid for 7 days.
    * Click "Save & Continue" until you reach the last page
    * Click "Back to Dashboard"
 5. Now create your OAuth credentials:
