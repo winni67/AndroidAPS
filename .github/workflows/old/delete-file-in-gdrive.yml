@@ -23,7 +23,7 @@ jobs:
 
     - name: Delete file from Google Drive
       env:
-        FILE_ID: 1TvvRgX3jaul-fKiaR7OwR1mSDSpWfisb
+        FILE_ID: "My_File_ID"
       run: |
         echo "${{ secrets.GDRIVE_CREDENTIALS }}" | base64 --decode > credentials.json
         python <<EOF
