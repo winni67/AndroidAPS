@@ -29,7 +29,7 @@ These instructions allow you to build AndroidAPS with a browser.
 1. For the Dropbox upload of the build AndroidAPS app, the following secrets have to be defined:
     * `DROPBOX_APP_KEY`
     * `DROPBOX_APP_SECRET`
-    * `DROPBOX_REFRESH_TOKEN`
+    * `DROPBOX_REFRESH_TOKEN`\
    See manual of dropbox-github-action on\
    https://github.com/marketplace/actions/dropbox-github-action \
    to define these three Github secrets.\
