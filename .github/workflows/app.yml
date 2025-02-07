@@ -80,13 +80,11 @@ jobs:
             echo "Original file not found: $original_file"
             exit 1
           fi
-          
+
     # Upload Artifact Build
     - name: Upload Logfiles
       uses: actions/upload-artifact@v4
       with:
          name: 'App-Build-${{ github.run_number }}'
          path: ${{ env.new_file }}
-         # path: ${{steps.sign_app.outputs.signedReleaseFile}}
-         # path: app/build/outputs/apk/full/release/app-full-release-unsigned-signed.apk
          retention-days: 1
