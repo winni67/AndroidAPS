@@ -71,6 +71,7 @@ jobs:
           echo "RUN_NUMBER=$RUN_NUMBER" >> $GITHUB_ENV
           original_file="app/build/outputs/apk/full/release/app-full-release-unsigned-signed.apk"
           new_file="app/build/outputs/apk/full/release/${PROJECT_NAME}-${VERSION}_${BRANCH}-app-full-release-${RUN_NUMBER}.apk"
+          echo "new_file=$new_file" >> $GITHUB_ENV
 
           if [ -f "$original_file" ]; then
             mv "$original_file" "$new_file"
@@ -85,7 +86,7 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
          name: 'App-Build-${{ github.run_number }}'
-         path: '$new_file'
+         path: ${{ env.new_file }}
          # path: ${{steps.sign_app.outputs.signedReleaseFile}}
          # path: app/build/outputs/apk/full/release/app-full-release-unsigned-signed.apk
          retention-days: 1
