@@ -8,7 +8,12 @@ on:
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
-
+    inputs:
+     branch:
+        description: "Select branch"
+        required: true
+        default: "master"
+        
 jobs:
   build:
 
@@ -52,12 +57,35 @@ jobs:
         # override default build-tools version (29.0.3) -- optional
         # BUILD_TOOLS_VERSION: "35.0.2"
         BUILD_TOOLS_VERSION: ${{ env.BUILD_TOOL_VERSION }}
-      
+
+    # Rename file
+    - name: Rename file
+      run: |
+          PROJECT_NAME="AAPS"
+          echo "PROJECT_NAME=$PROJECT_NAME" >> $GITHUB_ENV
+          VERSION=$(grep 'const val appVersion' buildSrc/src/main/kotlin/Versions.kt | awk -F'"' '{print $2}' )
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+          BRANCH=${{ github.event.inputs.branch }}
+          echo "BRANCH=$BRANCH" >> $GITHUB_ENV
+          RUN_NUMBER=${{ github.run_number }}
+          echo "RUN_NUMBER=$RUN_NUMBER" >> $GITHUB_ENV
+          original_file="app/build/outputs/apk/full/release/app-full-release-unsigned-signed.apk"
+          new_file="app/build/outputs/apk/full/release/${PROJECT_NAME}-${VERSION}_${BRANCH}-app-full-release-{RUN_NUMBER}.apk"
+
+          if [ -f "$original_file" ]; then
+            mv "$original_file" "$new_file"
+            echo "File has been renamed to: $new_file"
+          else
+            echo "Original file not found: $original_file"
+            exit 1
+          fi
+          
     # Upload Artifact Build
     - name: Upload Logfiles
       uses: actions/upload-artifact@v4
       with:
          name: 'App-Build-${{ github.run_number }}'
-         path: ${{steps.sign_app.outputs.signedReleaseFile}}
+         path: $new_file
+         # path: ${{steps.sign_app.outputs.signedReleaseFile}}
          # path: app/build/outputs/apk/full/release/app-full-release-unsigned-signed.apk
          retention-days: 1
