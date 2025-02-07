@@ -44,5 +44,5 @@ These instructions allow you to build AndroidAPS with a browser.
 4. After the download completes, delete the ZIP file on Github:\
    click at the trash behind the ZIP file.\
    This saves space at your Github account and protects your data.
-6. Uncompress the ZIP file. It contains the file, named app-full-release-unsigned-signed.apk
+6. Uncompress the ZIP file. It contains the build and signed AAPS apk file.
 7. Rename your app file if necessary.
