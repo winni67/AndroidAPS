@@ -1,0 +1,31 @@
+name: 7. Keep Google Token Alive
+
+on:
+  schedule:
+    - cron: '0 6 * * 1'  # Jeden Montag um 06:00 Uhr UTC (7 Uhr MEZ / 8 Uhr MESZ)
+  workflow_dispatch:      # Optional: manuell auslösbar
+
+jobs:
+  keep-alive:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Refresh Google access_token
+        run: |
+          echo "Refreshing token to keep refresh_token valid..."
+          
+          RESPONSE=$(curl -s -X POST https://oauth2.googleapis.com/token \
+            -d client_id="${{ secrets.GOOGLE_CLIENT_ID }}" \
+            -d client_secret="${{ secrets.GOOGLE_CLIENT_SECRET }}" \
+            -d refresh_token="${{ secrets.GOOGLE_REFRESH_TOKEN }}" \
+            -d grant_type=refresh_token)
+
+          ACCESS_TOKEN=$(echo "$RESPONSE" | jq -r .access_token)
+
+          if [ "$ACCESS_TOKEN" = "null" ] || [ -z "$ACCESS_TOKEN" ]; then
+            echo "❌ Failed to get access token"
+            echo "$RESPONSE"
+            exit 1
+          else
+            echo "✅ Token refreshed successfully"
+          fi
