@@ -56,15 +56,15 @@ jobs:
         uses: r0adkll/sign-android-release@v1
         id: sign_app
         with:
-        releaseDirectory: app/build/outputs/apk/full/release
-        signingKeyBase64: ${{ secrets.SIGNING_KEY }}
-        alias: ${{ secrets.KEY_ALIAS }}
-        keyStorePassword: ${{ secrets.KEY_STORE_PASSWORD }}
-        keyPassword: ${{ secrets.KEY_PASSWORD }}
+          releaseDirectory: app/build/outputs/apk/full/release
+          signingKeyBase64: ${{ secrets.SIGNING_KEY }}
+          alias: ${{ secrets.KEY_ALIAS }}
+          keyStorePassword: ${{ secrets.KEY_STORE_PASSWORD }}
+          keyPassword: ${{ secrets.KEY_PASSWORD }}
         env:
-        # override default build-tools version (29.0.3) -- optional
-        # BUILD_TOOLS_VERSION: "35.0.2"
-        BUILD_TOOLS_VERSION: ${{ env.BUILD_TOOL_VERSION }}
+          # override default build-tools version (29.0.3) -- optional
+          # BUILD_TOOLS_VERSION: "35.0.2"
+          BUILD_TOOLS_VERSION: ${{ env.BUILD_TOOL_VERSION }}
 
     # Rename file
       - name: Rename file
