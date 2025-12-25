@@ -2,10 +2,9 @@ package app.aaps.plugins.aps.openAPSSMB
 
 import android.content.Context
 import android.content.Intent
-import android.util.LongSparseArray
+import androidx.collection.LongSparseArray
+import androidx.collection.forEach
 import androidx.core.net.toUri
-import androidx.core.util.forEach
-import androidx.core.util.size
 import androidx.preference.PreferenceCategory
 import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.PreferenceManager
@@ -55,7 +54,6 @@ import app.aaps.core.keys.IntKey
 import app.aaps.core.keys.IntentKey
 import app.aaps.core.keys.UnitDoubleKey
 import app.aaps.core.keys.interfaces.Preferences
-import app.aaps.core.objects.aps.DetermineBasalResult
 import app.aaps.core.objects.constraints.ConstraintObject
 import app.aaps.core.objects.extensions.convertedToAbsolute
 import app.aaps.core.objects.extensions.getPassedDurationToTimeInMinutes
@@ -65,6 +63,7 @@ import app.aaps.core.objects.extensions.store
 import app.aaps.core.objects.extensions.target
 import app.aaps.core.objects.profile.ProfileSealed
 import app.aaps.core.utils.MidnightUtils
+import app.aaps.core.utils.extensions.put
 import app.aaps.core.validators.preferences.AdaptiveDoublePreference
 import app.aaps.core.validators.preferences.AdaptiveIntPreference
 import app.aaps.core.validators.preferences.AdaptiveIntentPreference
@@ -75,16 +74,15 @@ import app.aaps.plugins.aps.R
 import app.aaps.plugins.aps.events.EventOpenAPSUpdateGui
 import app.aaps.plugins.aps.events.EventResetOpenAPSGui
 import app.aaps.plugins.aps.openAPS.TddStatus
-import dagger.android.HasAndroidInjector
 import org.json.JSONObject
 import javax.inject.Inject
+import javax.inject.Provider
 import javax.inject.Singleton
 import kotlin.math.floor
 import kotlin.math.ln
 
 @Singleton
 open class OpenAPSSMBPlugin @Inject constructor(
-    private val injector: HasAndroidInjector,
     aapsLogger: AAPSLogger,
     private val rxBus: RxBus,
     private val constraintsChecker: ConstraintsChecker,
@@ -105,7 +103,8 @@ open class OpenAPSSMBPlugin @Inject constructor(
     private val uiInteraction: UiInteraction,
     private val determineBasalSMB: DetermineBasalSMB,
     private val profiler: Profiler,
-    private val glucoseStatusCalculatorSMB: GlucoseStatusCalculatorSMB
+    private val glucoseStatusCalculatorSMB: GlucoseStatusCalculatorSMB,
+    private val apsResultProvider: Provider<APSResult>
 ) : PluginBase(
     PluginDescription()
         .mainType(PluginType.APS)
@@ -139,7 +138,7 @@ open class OpenAPSSMBPlugin @Inject constructor(
     // last values
     override var lastAPSRun: Long = 0
     override val algorithm = APSResult.Algorithm.SMB
-    override var lastAPSResult: DetermineBasalResult? = null
+    override var lastAPSResult: APSResult? = null
     override fun supportsDynamicIsf(): Boolean = preferences.get(BooleanKey.ApsUseDynamicSensitivity)
 
     override fun getIsfMgdl(profile: Profile, caller: String): Double? {
@@ -239,7 +238,7 @@ open class OpenAPSSMBPlugin @Inject constructor(
         // no cached result found, let's calculate the value
         //aapsLogger.debug("calculateVariableIsf $caller CAL ${dateUtil.dateAndTimeAndSecondsString(timestamp)} $sensitivity")
         dynIsfCache.put(key, dynIsfResult.variableSensitivity)
-        if (dynIsfCache.size > 1000) dynIsfCache.clear()
+        if (dynIsfCache.size() > 1000) dynIsfCache.clear()
         return Pair("CALC", dynIsfResult.variableSensitivity)
     }
 
@@ -492,7 +491,7 @@ open class OpenAPSSMBPlugin @Inject constructor(
             flatBGsDetected = flatBGsDetected,
             dynIsfMode = dynIsfMode && dynIsfResult.tddPartsCalculated()
         ).also {
-            val determineBasalResult = DetermineBasalResult(injector, it)
+            val determineBasalResult = apsResultProvider.get().with(it)
             // Preserve input data
             determineBasalResult.inputConstraints = inputConstraints
             determineBasalResult.autosensResult = autosensResult

@@ -63,7 +63,7 @@
     <string name="basaltest_hint1">https://wiki.aaps.app/ru/latest/SettingUpAaps/YourAapsProfile.html</string>
     <string name="prerequisites_label">Предварительные требования</string>
     <string name="prerequisites_what">Что необходимо для настройки и использования AAPS?</string>
-    <string name="prerequisites_computer">Компьютер с установленной и настроенной Android Studio.</string>
+    <string name="prerequisites_build">Способ создания AAPS. Либо через браузер или компьютер с установленной Android Studio.</string>
     <string name="prerequisites_pump">Совместимая инсулиновая помпа, если вы планируете использовать замкнутый цикл.</string>
     <string name="prerequisites_nightscout">Nightscout, для записи всех данных и обзора настроек.</string>
     <string name="prerequisites_beanandroiddeveloper">Опыт программирования или редактирования кода.</string>
@@ -99,6 +99,7 @@ Context | Edit Context</string>
     <string name="insulin_fiasp">Fiasp®</string>
     <string name="insulin_novorapid">Novoapid ® /Novolog ®</string>
     <string name="insulin_humalog">Хумалог®</string>
+    <string name="insulin_actrapid">Actrapid ® /Humalin R ®/\"обычный\" человеческий инсулин.</string>
     <string name="insulin_hint1">https://wiki.aaps.app/ru/latest/SettingUpAaps/ConfigBuilder.html#insulin</string>
     <string name="sensitivity_label">Модули чувствительности</string>
     <string name="sensitivity_adjust">Модули чувствительности позволяют AAPS подстраиваться под временные или кратковременные изменения в чувствительности к инсулину (например, гормональные изменения или проблемы с поглощением в месте установки катетера).</string>

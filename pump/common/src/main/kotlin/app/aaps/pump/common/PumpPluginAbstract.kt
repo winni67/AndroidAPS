@@ -3,15 +3,12 @@ package app.aaps.pump.common
 import android.content.Context
 import android.content.Intent
 import android.content.ServiceConnection
-import android.text.format.DateFormat
 import app.aaps.core.data.pump.defs.ManufacturerType
 import app.aaps.core.data.pump.defs.PumpDescription
 import app.aaps.core.data.pump.defs.PumpType
 import app.aaps.core.interfaces.constraints.PluginConstraints
 import app.aaps.core.interfaces.logging.AAPSLogger
 import app.aaps.core.interfaces.logging.LTag
-import app.aaps.core.interfaces.objects.Instantiator
-import app.aaps.core.interfaces.plugin.ActivePlugin
 import app.aaps.core.interfaces.plugin.PluginDescription
 import app.aaps.core.interfaces.profile.Profile
 import app.aaps.core.interfaces.pump.DetailedBolusInfo
@@ -27,8 +24,6 @@ import app.aaps.core.interfaces.rx.AapsSchedulers
 import app.aaps.core.interfaces.rx.bus.RxBus
 import app.aaps.core.interfaces.rx.events.EventAppExit
 import app.aaps.core.interfaces.rx.events.EventCustomActionsChanged
-import app.aaps.core.interfaces.utils.DateUtil
-import app.aaps.core.interfaces.utils.DecimalFormatter
 import app.aaps.core.interfaces.utils.fabric.FabricPrivacy
 import app.aaps.core.keys.interfaces.NonPreferenceKey
 import app.aaps.core.keys.interfaces.Preferences
@@ -39,8 +34,7 @@ import app.aaps.pump.common.sync.PumpSyncStorage
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import io.reactivex.rxjava3.disposables.CompositeDisposable
-import org.json.JSONException
-import org.json.JSONObject
+import javax.inject.Provider
 
 /**
  * Created by andy on 23.04.18.
@@ -55,15 +49,12 @@ abstract class PumpPluginAbstract protected constructor(
     preferences: Preferences,
     commandQueue: CommandQueue,
     var rxBus: RxBus,
-    var activePlugin: ActivePlugin,
     var context: Context,
     var fabricPrivacy: FabricPrivacy,
-    var dateUtil: DateUtil,
     var aapsSchedulers: AapsSchedulers,
     var pumpSync: PumpSync,
     var pumpSyncStorage: PumpSyncStorage,
-    var decimalFormatter: DecimalFormatter,
-    protected val instantiator: Instantiator
+    protected val pumpEnactResultProvider: Provider<PumpEnactResult>
 ) : PumpPluginBase(pluginDescription, ownPreferences, aapsLogger, rh, preferences, commandQueue), Pump, PluginConstraints, PumpSyncEntriesCreator {
 
     protected val disposable = CompositeDisposable()
@@ -173,10 +164,7 @@ abstract class PumpPluginAbstract protected constructor(
         return true
     }
 
-    override fun lastDataTime(): Long {
-        aapsLogger.debug(LTag.PUMP, "lastDataTime [PumpPluginAbstract].")
-        return pumpStatusData.lastConnection
-    }
+    override val lastDataTime: Long get() = pumpStatusData.lastConnection
 
     // base basal rate, not temp basal
     override val baseBasalRate: Double
@@ -237,71 +225,6 @@ abstract class PumpPluginAbstract protected constructor(
         return getOperationNotSupportedWithCustomText(R.string.pump_operation_not_supported_by_pump_driver)
     }
 
-    override fun getJSONStatus(profile: Profile, profileName: String, version: String): JSONObject {
-        if (pumpStatusData.lastConnection + 60 * 60 * 1000L < System.currentTimeMillis()) {
-            return JSONObject()
-        }
-        val now = System.currentTimeMillis()
-        val pump = JSONObject()
-        val battery = JSONObject()
-        val status = JSONObject()
-        val extended = JSONObject()
-        try {
-            battery.put("percent", pumpStatusData.batteryRemaining)
-            status.put("status", pumpStatusData.pumpRunningState.status)
-            extended.put("Version", version)
-            try {
-                extended.put("ActiveProfile", profileName)
-            } catch (_: Exception) {
-            }
-            val tb = pumpSync.expectedPumpState().temporaryBasal
-            if (tb != null) {
-                extended.put("TempBasalAbsoluteRate", tb.convertedToAbsolute(now, profile))
-                extended.put("TempBasalStart", dateUtil.dateAndTimeString(tb.timestamp))
-                extended.put("TempBasalRemaining", tb.plannedRemainingMinutes)
-            }
-            val eb = pumpSync.expectedPumpState().extendedBolus
-            if (eb != null) {
-                extended.put("ExtendedBolusAbsoluteRate", eb.rate)
-                extended.put("ExtendedBolusStart", dateUtil.dateAndTimeString(eb.timestamp))
-                extended.put("ExtendedBolusRemaining", eb.plannedRemainingMinutes)
-            }
-            status.put("timestamp", dateUtil.toISOString(dateUtil.now()))
-            pump.put("battery", battery)
-            pump.put("status", status)
-            pump.put("extended", extended)
-            pump.put("reservoir", pumpStatusData.reservoirRemainingUnits)
-            pump.put("clock", dateUtil.toISOString(dateUtil.now()))
-        } catch (e: JSONException) {
-            aapsLogger.error("Unhandled exception", e)
-        }
-        return pump
-    }
-
-    // FIXME i18n, null checks: iob, TDD
-    override fun shortStatus(veryShort: Boolean): String {
-        var ret = ""
-
-        ret += if (pumpStatusData.lastConnection == 0L) {
-            "LastConn: never\n"
-        } else {
-            val agoMin = ((System.currentTimeMillis() - pumpStatusData.lastConnection) / 60.0 / 1000.0).toInt()
-            "LastConn: $agoMin min ago\n"
-        }
-
-        pumpStatusData.lastBolusTime?.let {
-            if (it.time != 0L) {
-                ret += "LastBolus: ${decimalFormatter.to2Decimal(pumpStatusData.lastBolusAmount!!)}U @${DateFormat.format("HH:mm", it)}\n"
-            }
-        }
-        pumpSync.expectedPumpState().temporaryBasal?.let { ret += "Temp: ${it.toStringFull(dateUtil, rh)}\n" }
-        pumpSync.expectedPumpState().extendedBolus?.let { ret += "Extended: ${it.toStringFull(dateUtil, rh)}\n" }
-        ret += "IOB: ${pumpStatusData.iob}U\n"
-        ret += "Reserv: ${decimalFormatter.to0Decimal(pumpStatusData.reservoirRemainingUnits)}U\n"
-        ret += "Batt: ${pumpStatusData.batteryRemaining}\n"
-        return ret
-    }
-
     @Synchronized
     override fun deliverTreatment(detailedBolusInfo: DetailedBolusInfo): PumpEnactResult {
         // Insulin value must be greater than 0
@@ -328,7 +251,7 @@ abstract class PumpPluginAbstract protected constructor(
     protected abstract fun triggerUIChange()
 
     private fun getOperationNotSupportedWithCustomText(resourceId: Int): PumpEnactResult =
-        instantiator.providePumpEnactResult().success(false).enacted(false).comment(resourceId)
+        pumpEnactResultProvider.get().success(false).enacted(false).comment(resourceId)
 
     init {
         pumpDescription.fillFor(pumpType)
