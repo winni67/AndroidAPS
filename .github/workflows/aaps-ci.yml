@@ -136,6 +136,7 @@ jobs:
           echo "🔐 Getting Google OAuth2 access token..."
           TOKEN_RESPONSE=$(curl -s -X POST https://oauth2.googleapis.com/token \
             -d client_id="$GDRIVE_CLIENT_ID" \
+            -d client_secret="${{ secrets.GOOGLE_CLIENT_SECRET }}" \
             -d refresh_token="$GDRIVE_REFRESH_TOKEN" \
             -d grant_type=refresh_token)
           ACCESS_TOKEN=$(echo "$TOKEN_RESPONSE" | jq -r .access_token)
