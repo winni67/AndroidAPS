@@ -22,13 +22,10 @@
 # signing certificates, which is what `-allowProvisioningUpdates` asks it to do, and the failure
 # reads as a signing error rather than a permissions one.
 
-name: iOS TestFlight
+name: My iOS TestFlight
 
 on:
   workflow_dispatch:
-  push:
-    tags:
-      - 'ios-testflight-*'
 
 # Read-only: this job publishes to Apple, and needs nothing back from GitHub.
 permissions:
@@ -61,9 +58,9 @@ jobs:
       matrix:
         include:
           - scheme: AAPSClient
-            bundle: app.aaps.client
+            bundle: winni67.aaps.client
           - scheme: AAPSClient2
-            bundle: app.aaps.client2
+            bundle: winni67.aaps.client2
 
     # Holds the four secrets. Give it required reviewers and restrict it to the `ios` branch: in a
     # public repository that approval is the thing standing between a workflow edit and the signing
