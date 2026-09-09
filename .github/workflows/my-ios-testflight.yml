@@ -162,6 +162,10 @@ jobs:
           printf '%s' "$KEY" > "$RUNNER_TEMP/keys/AuthKey_${KEY_ID}.p8"
           chmod 600 "$RUNNER_TEMP/keys/AuthKey_${KEY_ID}.p8"
 
+      - name: Patch Bundle ID for Personal Team
+        run: |
+          sed -i '' 's/app.aaps.client/org.aaps-community.client/g' ios/app/AAPSClient.xcodeproj/project.pbxproj
+
       - name: Archive
         env:
           KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
