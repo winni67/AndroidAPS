@@ -1,6 +1,7 @@
 package app.aaps.core.data.model
 
-fun SourceSensor.advancedFilteringSupported(): Boolean = this in ADVANCED_FILTERING_SENSORS
+// fun SourceSensor.advancedFilteringSupported(): Boolean = this in ADVANCED_FILTERING_SENSORS
+fun SourceSensor.advancedFilteringSupported(): Boolean = true
 
 private val ADVANCED_FILTERING_SENSORS = setOf(
     SourceSensor.DEXCOM_NATIVE_UNKNOWN,
