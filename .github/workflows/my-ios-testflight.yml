@@ -22,7 +22,7 @@
 # signing certificates, which is what `-allowProvisioningUpdates` asks it to do, and the failure
 # reads as a signing error rather than a permissions one.
 
-name: iOS TestFlight
+name: My iOS TestFlight
 
 on:
   workflow_dispatch:
