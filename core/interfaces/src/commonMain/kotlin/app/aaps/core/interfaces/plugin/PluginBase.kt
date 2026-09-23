@@ -10,6 +10,7 @@ import app.aaps.core.interfaces.notifications.AlarmSound
 import app.aaps.core.interfaces.notifications.NotificationHandle
 import app.aaps.core.interfaces.notifications.NotificationId
 import app.aaps.core.interfaces.notifications.NotificationManager
+import app.aaps.core.interfaces.plugin.PluginBase.Companion.TRANSITION_WAIT
 import app.aaps.core.interfaces.resources.TextResolver
 import app.aaps.core.keys.interfaces.PreferenceItem
 import kotlinx.coroutines.CancellationException
@@ -178,10 +179,32 @@ abstract class PluginBase(
 
     open fun isEnabled() = isEnabled(pluginDescription.mainType)
 
+    /**
+     * What this build forces, or `null` when the user's stored choice decides. See [Enforcement].
+     *
+     * A CONSTRAINTS plugin is enabled by virtue of being registered: which constraint plugins exist is a
+     * property of the build, and one that is present must always be consulted. That is why the rule lives
+     * here rather than being declared on each of them - a new constraint plugin cannot forget it.
+     *
+     * Disabled wins a disagreement, so a wrong declaration fails closed.
+     */
+    fun enforcedState(): EnforcedState? {
+        if (pluginDescription.mainType == PluginType.CONSTRAINTS) return EnforcedState.Enabled
+        val applying = pluginDescription.enforcements.filter { it.applies() }
+        return when {
+            applying.any { it.state == EnforcedState.Disabled } -> EnforcedState.Disabled
+            applying.any { it.state == EnforcedState.Enabled }  -> EnforcedState.Enabled
+            else                                               -> null
+        }
+    }
+
     fun isEnabled(type: PluginType): Boolean {
-        if (pluginDescription.alwaysEnabled && type == pluginDescription.mainType) return true
         if (pluginDescription.mainType == PluginType.CONSTRAINTS && type == PluginType.CONSTRAINTS) return true
-        if (type == pluginDescription.mainType) return state == State.ENABLED && specialEnableCondition()
+        if (type == pluginDescription.mainType) return when (enforcedState()) {
+            EnforcedState.Enabled  -> true
+            EnforcedState.Disabled -> false
+            null                   -> state == State.ENABLED
+        }
         if (type == PluginType.CONSTRAINTS && pluginDescription.mainType == PluginType.PUMP && isEnabled(PluginType.PUMP)) return true
         return type == PluginType.CONSTRAINTS && pluginDescription.mainType == PluginType.APS && isEnabled(PluginType.APS)
     }
@@ -307,9 +330,16 @@ abstract class PluginBase(
     /**
      * [setPluginEnabled], but returns only once [onStart] / [onStop] has actually finished.
      *
-     * Applying imported settings needs this: it stops and starts pump drivers, and the whole point of
-     * waiting for an idle pump first is lost if the teardown is still queued on [pluginScope] when the
-     * caller moves on and lets commands flow again.
+     * **Used by tests, not by production code, and that is correct rather than a gap.** It was written
+     * for the settings import, on the reasoning that stopping and starting pump drivers is pointless if
+     * the teardown is still queued when the caller lets commands flow again. The import does need that
+     * guarantee - it just gets it one level up instead: `ConfigBuilderImpl.applyConfiguration` collects
+     * the jobs from every `setPluginEnabled` it calls and waits for the whole set at once, bounded by
+     * `PLUGIN_SETTLE_WAIT`. Waiting plugin-by-plugin here would serialise what that deliberately runs
+     * in parallel.
+     *
+     * Kept because roughly twenty tests use it to await a transition deterministically; the alternative
+     * is `setPluginEnabled(type, state)?.join()` written out at each of them.
      */
     suspend fun setPluginEnabledAwaiting(type: PluginType, newState: Boolean) {
         setPluginEnabled(type, newState)?.join()
@@ -343,16 +373,8 @@ abstract class PluginBase(
     }
 
     fun showInList(type: PluginType): Boolean {
-        if (pluginDescription.mainType == type) return pluginDescription.showInList.invoke() && specialShowInListCondition()
+        if (pluginDescription.mainType == type) return pluginDescription.showInList.invoke()
         return false
-    }
-
-    open fun specialEnableCondition(): Boolean {
-        return true
-    }
-
-    open fun specialShowInListCondition(): Boolean {
-        return true
     }
 
     open suspend fun onStart() {}
