@@ -90,7 +90,7 @@ class LoopPluginTest : TestBaseWithProfile() {
      */
     private fun buildLoopPlugin() = LoopPlugin(
         aapsLogger, rxBus, preferences, config,
-        constraintChecker, rh, profileFunction, commandQueue, activePlugin, processedTbrEbData, receiverStatusStore, fabricPrivacy, dateUtil, uel,
+        constraintChecker, baseText, profileFunction, commandQueue, activePlugin, processedTbrEbData, receiverStatusStore, fabricPrivacy, dateUtil, uel,
         // The shared test base still hands out a javax Provider, which other tests rely on;
         // LoopPlugin takes Metro's now, so it is adapted here rather than flipping the base.
         persistenceLayer, notificationManager, { pumpEnactResultProvider() },
@@ -120,7 +120,7 @@ class LoopPluginTest : TestBaseWithProfile() {
         assertThat(loopPlugin.getType()).isEqualTo(PluginType.LOOP)
         assertThat(loopPlugin.name).isEqualTo("Loop")
         assertThat(loopPlugin.nameShort).isEqualTo("LOOP")
-        assertThat(loopPlugin.showInList(PluginType.LOOP)).isTrue()
+        assertThat(loopPlugin.showInList()).isTrue()
 
         // Plugin is enabled by default
         assertThat(loopPlugin.isEnabled()).isTrue()
