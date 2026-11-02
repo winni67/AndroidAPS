@@ -63,9 +63,9 @@ import app.aaps.plugins.main.MainStrings
 import app.aaps.plugins.main.iob.iobCobCalculator.data.AutosensDataStoreObject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineStart
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
-import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.map
@@ -116,7 +116,8 @@ class IobCobCalculatorPlugin(
     // should. kotlin.concurrent.Volatile, which works in common code.
     @Volatile override var ads: AutosensDataStore = AutosensDataStoreObject()
 
-    private val dataLock = AapsLock()
+    // Guards iobTable, every read and every write. Internal only so a test can hold it.
+    internal val dataLock = AapsLock()
 
     @OptIn(FlowPreview::class)
     override suspend fun onStart() {
@@ -304,7 +305,10 @@ class IobCobCalculatorPlugin(
     override suspend fun calculateFromTreatmentsAndTemps(toTime: Long, profile: EffectiveProfile): IobTotal {
         val now = dateUtil.now()
         val time = ads.roundUpTime(toTime)
-        val cacheHit = iobTable[time]
+        // Under the same lock as every write. iobTable is a plain LongSparseArray, and the writers
+        // (new BG, history change, clearCache) run on other threads: a read without the lock could
+        // see the arrays half compacted and return the IOB of another time, or throw (#5211).
+        val cacheHit = dataLock.withLock { iobTable[time] }
         if (time < now && cacheHit != null) {
             //og.debug(">>> calculateFromTreatmentsAndTemps Cache hit " + new Date(time).toLocaleString());
             return cacheHit
@@ -478,7 +482,8 @@ class IobCobCalculatorPlugin(
         onRunFailed = {
             clearCache()
             ads.reset()
-        }
+        },
+        keepAwake = { timeout -> calculationWorkflow.keepAwake(timeout) }
     ) { oldDataTimestamp, reloadBgData, triggeredByNewBG ->
         // The TDD cache clear is inside newHistoryData, so it still happens here, before the
         // recalculation and inside the scheduler's lock - and the EffectiveProfileSwitch path, which
@@ -488,6 +493,17 @@ class IobCobCalculatorPlugin(
 
     suspend fun scheduleHistoryDataChange(oldDataTimestamp: Long, reloadBgData: Boolean, triggeredByNewBG: Boolean = false) =
         historyScheduler.schedule(oldDataTimestamp, reloadBgData, triggeredByNewBG)
+
+    override suspend fun apsResultsStored(oldest: Long) {
+        // A bucket counts the results up to its own BG reading, so one after the newest reading is not late
+        val store = ads
+        val newestReading = store.dataLock.withLock { store.bucketedData?.firstOrNull()?.timestamp } ?: return
+        if (oldest > newestReading) return
+        aapsLogger.debug(LTag.AUTOSENS) {
+            "Loop results from ${dateUtil.dateAndTimeAndSecondsString(oldest)} came after the BG of ${dateUtil.dateAndTimeAndSecondsString(newestReading)}, calculating again from there"
+        }
+        scheduleHistoryDataChange(oldest, reloadBgData = false)
+    }
 
     // When historical data is changed (coming from NS etc.) finished calculations after this date must be invalidated
     private suspend fun newHistoryData(oldDataTimestamp: Long, bgDataReload: Boolean, triggeredByNewBG: Boolean) {
